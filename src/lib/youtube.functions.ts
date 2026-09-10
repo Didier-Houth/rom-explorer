@@ -112,6 +112,7 @@ async function fetchTranscript(videoId: string): Promise<string | null> {
         "User-Agent":
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122 Safari/537.36",
         "Accept-Language": "fr-FR,fr;q=0.9",
+        Cookie: "CONSENT=YES+cb.20210720-07-p0.fr+FX+410",
       },
     });
     if (!pageRes.ok) return null;
