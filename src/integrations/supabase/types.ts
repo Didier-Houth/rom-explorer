@@ -14,7 +14,54 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      videos_metiers: {
+        Row: {
+          channel_title: string | null
+          created_at: string
+          duration_seconds: number | null
+          id: string
+          long_link: string
+          rome_code: string
+          rome_label: string
+          summary: string | null
+          thumbnail_url: string | null
+          title: string
+          transcript: string | null
+          video_id: string
+          watch_link: string
+        }
+        Insert: {
+          channel_title?: string | null
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          long_link: string
+          rome_code: string
+          rome_label: string
+          summary?: string | null
+          thumbnail_url?: string | null
+          title: string
+          transcript?: string | null
+          video_id: string
+          watch_link: string
+        }
+        Update: {
+          channel_title?: string | null
+          created_at?: string
+          duration_seconds?: number | null
+          id?: string
+          long_link?: string
+          rome_code?: string
+          rome_label?: string
+          summary?: string | null
+          thumbnail_url?: string | null
+          title?: string
+          transcript?: string | null
+          video_id?: string
+          watch_link?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
