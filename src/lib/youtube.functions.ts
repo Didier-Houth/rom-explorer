@@ -197,7 +197,7 @@ export const summarizeVideo = createServerFn({ method: "POST" })
           },
           {
             role: "user",
-            content: `Métier concerné : ${data.romeLabel}\nTitre de la vidéo : ${data.title}\n\nÀ partir de la transcription ci-dessous, rédige :\n1) un résumé de 5 à 8 lignes ;\n2) une liste « À retenir » de 4 points clés (activités, compétences, conditions d'exercice, accès au métier) ;\n3) une phrase d'accroche de 20 mots maximum réutilisable en communication.\n\nTranscription :\n${source.slice(0, 20000)}`,
+            content: `Métier concerné : ${data.romeLabel}\nTitre de la vidéo : ${data.title}\n\nÀ partir de la ${sourceLabel} ci-dessous, rédige :\n1) un résumé de 5 à 8 lignes ;\n2) une liste « À retenir » de 4 points clés (activités, compétences, conditions d'exercice, accès au métier) ;\n3) une phrase d'accroche de 20 mots maximum réutilisable en communication.\n${transcript ? "" : "\nPrécise en une première ligne courte que le résumé est établi à partir de la description de la vidéo, la transcription n'étant pas accessible.\n"}\n${transcript ? "Transcription" : "Description"} :\n${source.slice(0, 20000)}`,
           },
         ],
       }),
