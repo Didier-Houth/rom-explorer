@@ -141,6 +141,27 @@ async function fetchTranscript(videoId: string): Promise<string | null> {
   }
 }
 
+async function fetchWatchDescription(videoId: string): Promise<string | null> {
+  try {
+    const res = await fetch(`https://www.youtube.com/watch?v=${videoId}&hl=fr`, {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122 Safari/537.36",
+        "Accept-Language": "fr-FR,fr;q=0.9",
+        Cookie: "CONSENT=YES+cb.20210720-07-p0.fr+FX+410",
+      },
+    });
+    if (!res.ok) return null;
+    const html = await res.text();
+    const match = /"shortDescription":"((?:[^"\\]|\\.)*)"/.exec(html);
+    if (!match?.[1]) return null;
+    const text = JSON.parse(`"${match[1]}"`) as string;
+    return text.trim().length > 30 ? text.trim() : null;
+  } catch {
+    return null;
+  }
+}
+
 export const summarizeVideo = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => SummaryInput.parse(input))
   .handler(async ({ data }): Promise<{ transcript: string | null; summary: string }> => {
@@ -148,14 +169,16 @@ export const summarizeVideo = createServerFn({ method: "POST" })
     if (!apiKey) throw new Error("Le service de résumé n'est pas configuré.");
 
     const transcript = await fetchTranscript(data.videoId);
-    const source = transcript ?? data.description;
+    const watchDescription = transcript ? null : await fetchWatchDescription(data.videoId);
+    const source = transcript ?? watchDescription ?? data.description;
     if (!source || source.trim().length < 30) {
       return {
         transcript,
         summary:
-          "Aucune transcription n'est disponible pour cette vidéo : le résumé automatique n'a pas pu être produit.",
+          "Aucune transcription ni description exploitable n'est disponible pour cette vidéo : le résumé automatique n'a pas pu être produit.",
       };
     }
+    const sourceLabel = transcript ? "transcription" : "description de la vidéo";
 
     const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
