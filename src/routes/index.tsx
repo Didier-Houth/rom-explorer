@@ -79,7 +79,7 @@ type BatchRow = {
   status: "en attente" | "en cours" | "terminé" | "erreur";
   video: VideoResult | null;
   summary: string;
-  message?: string;
+  message?: string | undefined;
 };
 
 function Index() {
