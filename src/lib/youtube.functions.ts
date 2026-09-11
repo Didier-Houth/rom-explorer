@@ -206,8 +206,8 @@ async function transcribeAndSummarize(
     if (!content) return null;
     const match = /\[TRANSCRIPTION\]([\s\S]*?)\[RESUME\]([\s\S]*)$/i.exec(content);
     if (!match) return null;
-    const transcript = match[1].trim();
-    const summary = match[2].trim();
+    const transcript = (match[1] ?? "").trim();
+    const summary = (match[2] ?? "").trim();
     if (transcript.length < 40 || summary.length < 40) return null;
     return { transcript, summary };
   } catch {
