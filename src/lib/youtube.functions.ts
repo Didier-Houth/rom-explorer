@@ -162,11 +162,67 @@ async function fetchWatchDescription(videoId: string): Promise<string | null> {
   }
 }
 
+// Lecture directe de la vidéo par le modèle : la transcription est produite à partir
+// de la bande son, YouTube bloquant l'accès serveur aux fichiers de sous-titres.
+async function transcribeAndSummarize(
+  apiKey: string,
+  data: { videoId: string; title: string; romeLabel: string },
+): Promise<{ transcript: string; summary: string } | null> {
+  try {
+    const res = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Lovable-API-Key": apiKey,
+        "X-Lovable-AIG-SDK": "fetch",
+      },
+      body: JSON.stringify({
+        model: "google/gemini-3.8-flash",
+        messages: [
+          {
+            role: "system",
+            content:
+              "Tu rédiges en français, pour France Travail, des transcriptions et synthèses de vidéos métiers. Style clair, neutre, orienté découverte du métier.",
+          },
+          {
+            role: "user",
+            content: [
+              {
+                type: "text",
+                text: `Métier concerné : ${data.romeLabel}\nTitre de la vidéo : ${data.title}\n\nÉcoute la vidéo et réponds exactement dans ce format :\n\n[TRANSCRIPTION]\n(transcription fidèle des paroles de la vidéo, en français, en paragraphes)\n\n[RESUME]\n1) un résumé de 5 à 8 lignes ;\n2) une liste « À retenir » de 4 points clés (activités, compétences, conditions d'exercice, accès au métier) ;\n3) une phrase d'accroche de 20 mots maximum réutilisable en communication.`,
+              },
+              {
+                type: "video_url",
+                video_url: { url: `https://www.youtube.com/watch?v=${data.videoId}` },
+              },
+            ],
+          },
+        ],
+      }),
+    });
+    if (!res.ok) return null;
+    const json = (await res.json()) as { choices?: Array<{ message?: { content?: string } }> };
+    const content = json.choices?.[0]?.message?.content?.trim();
+    if (!content) return null;
+    const match = /\[TRANSCRIPTION\]([\s\S]*?)\[RESUME\]([\s\S]*)$/i.exec(content);
+    if (!match) return null;
+    const transcript = match[1].trim();
+    const summary = match[2].trim();
+    if (transcript.length < 40 || summary.length < 40) return null;
+    return { transcript, summary };
+  } catch {
+    return null;
+  }
+}
+
 export const summarizeVideo = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => SummaryInput.parse(input))
   .handler(async ({ data }): Promise<{ transcript: string | null; summary: string }> => {
     const apiKey = process.env["LOVABLE_API_KEY"];
     if (!apiKey) throw new Error("Le service de résumé n'est pas configuré.");
+
+    const direct = await transcribeAndSummarize(apiKey, data);
+    if (direct) return direct;
 
     const transcript = await fetchTranscript(data.videoId);
     const watchDescription = transcript ? null : await fetchWatchDescription(data.videoId);
