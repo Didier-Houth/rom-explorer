@@ -73,6 +73,12 @@ function Field({
   );
 }
 
+type CollectionItem = {
+  romeCode: string;
+  romeLabel: string;
+  video: VideoResult;
+};
+
 type BatchRow = {
   romeCode: string;
   romeLabel: string;
@@ -100,6 +106,16 @@ function Index() {
   const [batchRows, setBatchRows] = useState<BatchRow[]>([]);
   const [batchRunning, setBatchRunning] = useState(false);
   const [batchError, setBatchError] = useState<string | null>(null);
+
+  const [collection, setCollection] = useState<CollectionItem[]>([]);
+
+  function toggleCollection(video: VideoResult, romeCode: string, romeLabel: string) {
+    setCollection((prev) =>
+      prev.some((i) => i.video.videoId === video.videoId)
+        ? prev.filter((i) => i.video.videoId !== video.videoId)
+        : [...prev, { romeCode, romeLabel, video }],
+    );
+  }
 
   const label = useMemo(() => lookupRomeLabel(code) ?? "", [code]);
 
