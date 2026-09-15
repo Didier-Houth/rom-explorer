@@ -355,34 +355,110 @@ function Index() {
               Vidéos de moins de 4 minutes
             </h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {results.map((v) => (
+              {results.map((v) => {
+                const checked = collection.some((i) => i.video.videoId === v.videoId);
+                return (
+                  <div
+                    key={v.videoId}
+                    className={`overflow-hidden rounded-lg border text-left transition-colors ${
+                      selected?.videoId === v.videoId
+                        ? "border-primary bg-secondary"
+                        : "border-border bg-card hover:border-primary/50"
+                    }`}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => void handleSelect(v)}
+                      className="block w-full text-left"
+                    >
+                      {v.thumbnailUrl && (
+                        <img
+                          src={v.thumbnailUrl}
+                          alt={`Miniature de la vidéo ${v.title}`}
+                          loading="lazy"
+                          className="h-32 w-full object-cover"
+                        />
+                      )}
+                      <div className="space-y-1 p-3 pb-1">
+                        <p className="line-clamp-2 text-sm font-semibold text-foreground">
+                          {v.title}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {v.channelTitle} · {formatDuration(v.durationSeconds)}
+                        </p>
+                      </div>
+                    </button>
+                    <label className="flex cursor-pointer items-center gap-2 px-3 pb-3 pt-1 text-xs font-medium text-foreground">
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={() => toggleCollection(v, normalizeRomeCode(code), label)}
+                        className="h-4 w-4 accent-[hsl(var(--primary))]"
+                      />
+                      Ajouter à ma collection
+                    </label>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        {collection.length > 0 && (
+          <section className="mt-10 rounded-xl border border-border bg-card p-6 shadow-sm">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h2 className="font-display text-xl font-bold text-foreground">
+                Ma collection ({collection.length})
+              </h2>
+              <div className="flex gap-2">
                 <button
-                  key={v.videoId}
                   type="button"
-                  onClick={() => void handleSelect(v)}
-                  className={`overflow-hidden rounded-lg border text-left transition-colors ${
-                    selected?.videoId === v.videoId
-                      ? "border-primary bg-secondary"
-                      : "border-border bg-card hover:border-primary/50"
-                  }`}
+                  onClick={() =>
+                    void navigator.clipboard.writeText(
+                      collection.map((i) => `${i.romeCode} — ${i.video.title}\n${i.video.watchLink}`).join("\n\n"),
+                    )
+                  }
+                  className="h-10 rounded-md border border-border bg-secondary px-4 text-sm font-medium text-secondary-foreground hover:bg-accent"
                 >
-                  {v.thumbnailUrl && (
-                    <img
-                      src={v.thumbnailUrl}
-                      alt={`Miniature de la vidéo ${v.title}`}
-                      loading="lazy"
-                      className="h-32 w-full object-cover"
-                    />
-                  )}
-                  <div className="space-y-1 p-3">
-                    <p className="line-clamp-2 text-sm font-semibold text-foreground">{v.title}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {v.channelTitle} · {formatDuration(v.durationSeconds)}
+                  Copier la liste
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCollection([])}
+                  className="h-10 rounded-md border border-border bg-secondary px-4 text-sm font-medium text-secondary-foreground hover:bg-accent"
+                >
+                  Vider
+                </button>
+              </div>
+            </div>
+            <ul className="mt-4 divide-y divide-border">
+              {collection.map((i) => (
+                <li key={i.video.videoId} className="flex items-start gap-3 py-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold text-foreground">{i.video.title}</p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {i.romeCode} {i.romeLabel ? `· ${i.romeLabel}` : ""} · {i.video.watchLink}
                     </p>
                   </div>
-                </button>
+                  <button
+                    type="button"
+                    onClick={() => void navigator.clipboard.writeText(i.video.watchLink)}
+                    className="rounded-md border border-border bg-secondary px-2 py-1 text-xs font-medium text-secondary-foreground hover:bg-accent"
+                  >
+                    Copier
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setCollection((prev) => prev.filter((x) => x.video.videoId !== i.video.videoId))
+                    }
+                    className="rounded-md border border-border px-2 py-1 text-xs font-medium text-destructive hover:bg-destructive/10"
+                  >
+                    Retirer
+                  </button>
+                </li>
               ))}
-            </div>
+            </ul>
           </section>
         )}
 
