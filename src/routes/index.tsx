@@ -119,6 +119,12 @@ function Index() {
   }
 
   const label = useMemo(() => lookupRomeLabel(code) ?? "", [code]);
+  // Libellé utilisé pour la recherche YouTube : le métier saisi librement est prioritaire
+  // sur le libellé généré à partir du code ROME.
+  const searchLabel = useMemo(
+    () => (metierLibre.trim() ? metierLibre.trim() : label),
+    [metierLibre, label],
+  );
 
   async function handleSearch() {
     setError(null);
@@ -127,13 +133,17 @@ function Index() {
     setSummary("");
     setTranscript(null);
     setSaved(false);
-    if (!label) {
-      setError("Ce code ROME n'est pas reconnu. Vérifiez la saisie (exemple : M1805).");
+    if (!searchLabel) {
+      setError(
+        "Saisissez un code ROME reconnu (exemple : M1805) ou un nom de métier libre.",
+      );
       return;
     }
     setLoading(true);
     try {
-      const items = await search({ data: { romeCode: normalizeRomeCode(code), romeLabel: label } });
+      const items = await search({
+        data: { romeCode: normalizeRomeCode(code) || "LIBRE", romeLabel: searchLabel },
+      });
       setResults(items);
       if (items.length === 0) {
         setError("Aucune vidéo de moins de 4 minutes trouvée pour ce métier.");
