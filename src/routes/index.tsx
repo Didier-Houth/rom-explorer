@@ -332,15 +332,41 @@ function Index() {
               </datalist>
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <label
+                htmlFor="rome-label"
+                className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+              >
                 Nom du métier ROME
               </label>
               <input
+                id="rome-label"
                 readOnly
                 value={label}
                 placeholder="Renseigné automatiquement"
                 className="h-11 w-full rounded-md border border-border bg-secondary px-3 text-sm text-foreground outline-none"
               />
+            </div>
+            <div className="space-y-1.5 sm:col-span-2">
+              <label
+                htmlFor="metier-libre"
+                className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+              >
+                Métier (saisie libre) — prioritaire sur le libellé ROME
+              </label>
+              <input
+                id="metier-libre"
+                value={metierLibre}
+                onChange={(e) => setMetierLibre(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") void handleSearch();
+                }}
+                placeholder="Saisissez librement un métier (ex. développeur web, aide-soignant…)"
+                className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm font-semibold text-foreground outline-none focus:border-ring focus:ring-2 focus:ring-ring/30"
+              />
+              <p className="text-xs text-muted-foreground">
+                Si ce champ est rempli, il est utilisé pour la recherche YouTube à la place du libellé
+                ROME. Laissez-le vide pour utiliser le libellé généré.
+              </p>
             </div>
           </div>
 
