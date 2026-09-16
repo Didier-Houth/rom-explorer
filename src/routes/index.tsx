@@ -167,7 +167,7 @@ function Index() {
         data: {
           videoId: video.videoId,
           title: video.title,
-          romeLabel: label,
+          romeLabel: searchLabel,
           description: video.description,
         },
       });
