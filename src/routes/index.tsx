@@ -93,6 +93,7 @@ function Index() {
   const summarize = useServerFn(summarizeVideo);
 
   const [code, setCode] = useState("");
+  const [metierLibre, setMetierLibre] = useState("");
   const [results, setResults] = useState<VideoResult[] | null>(null);
   const [selected, setSelected] = useState<VideoResult | null>(null);
   const [summary, setSummary] = useState("");
