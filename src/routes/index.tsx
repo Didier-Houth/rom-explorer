@@ -93,6 +93,7 @@ function Index() {
   const summarize = useServerFn(summarizeVideo);
 
   const [code, setCode] = useState("");
+  const [metierLibre, setMetierLibre] = useState("");
   const [results, setResults] = useState<VideoResult[] | null>(null);
   const [selected, setSelected] = useState<VideoResult | null>(null);
   const [summary, setSummary] = useState("");
@@ -118,6 +119,12 @@ function Index() {
   }
 
   const label = useMemo(() => lookupRomeLabel(code) ?? "", [code]);
+  // Libellé utilisé pour la recherche YouTube : le métier saisi librement est prioritaire
+  // sur le libellé généré à partir du code ROME.
+  const searchLabel = useMemo(
+    () => (metierLibre.trim() ? metierLibre.trim() : label),
+    [metierLibre, label],
+  );
 
   async function handleSearch() {
     setError(null);
@@ -126,13 +133,17 @@ function Index() {
     setSummary("");
     setTranscript(null);
     setSaved(false);
-    if (!label) {
-      setError("Ce code ROME n'est pas reconnu. Vérifiez la saisie (exemple : M1805).");
+    if (!searchLabel) {
+      setError(
+        "Saisissez un code ROME reconnu (exemple : M1805) ou un nom de métier libre.",
+      );
       return;
     }
     setLoading(true);
     try {
-      const items = await search({ data: { romeCode: normalizeRomeCode(code), romeLabel: label } });
+      const items = await search({
+        data: { romeCode: normalizeRomeCode(code) || "LIBRE", romeLabel: searchLabel },
+      });
       setResults(items);
       if (items.length === 0) {
         setError("Aucune vidéo de moins de 4 minutes trouvée pour ce métier.");
@@ -156,7 +167,7 @@ function Index() {
         data: {
           videoId: video.videoId,
           title: video.title,
-          romeLabel: label,
+          romeLabel: searchLabel,
           description: video.description,
         },
       });
@@ -174,7 +185,7 @@ function Index() {
     setError(null);
     const { error: dbError } = await supabase.from("videos_metiers").insert({
       rome_code: normalizeRomeCode(code),
-      rome_label: label,
+      rome_label: searchLabel,
       video_id: selected.videoId,
       title: selected.title,
       channel_title: selected.channelTitle,
@@ -321,15 +332,41 @@ function Index() {
               </datalist>
             </div>
             <div className="space-y-1.5">
-              <label className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <label
+                htmlFor="rome-label"
+                className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+              >
                 Nom du métier ROME
               </label>
               <input
+                id="rome-label"
                 readOnly
                 value={label}
                 placeholder="Renseigné automatiquement"
                 className="h-11 w-full rounded-md border border-border bg-secondary px-3 text-sm text-foreground outline-none"
               />
+            </div>
+            <div className="space-y-1.5 sm:col-span-2">
+              <label
+                htmlFor="metier-libre"
+                className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+              >
+                Métier (saisie libre) — prioritaire sur le libellé ROME
+              </label>
+              <input
+                id="metier-libre"
+                value={metierLibre}
+                onChange={(e) => setMetierLibre(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") void handleSearch();
+                }}
+                placeholder="Saisissez librement un métier (ex. développeur web, aide-soignant…)"
+                className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm font-semibold text-foreground outline-none focus:border-ring focus:ring-2 focus:ring-ring/30"
+              />
+              <p className="text-xs text-muted-foreground">
+                Si ce champ est rempli, il est utilisé pour la recherche YouTube à la place du libellé
+                ROME. Laissez-le vide pour utiliser le libellé généré.
+              </p>
             </div>
           </div>
 
