@@ -185,7 +185,7 @@ function Index() {
     setError(null);
     const { error: dbError } = await supabase.from("videos_metiers").insert({
       rome_code: normalizeRomeCode(code),
-      rome_label: label,
+      rome_label: searchLabel,
       video_id: selected.videoId,
       title: selected.title,
       channel_title: selected.channelTitle,
