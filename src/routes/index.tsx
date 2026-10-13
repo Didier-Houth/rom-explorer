@@ -3,6 +3,14 @@ import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
 import { lookupRomeLabel, normalizeRomeCode, ROME_CODES } from "@/lib/rome-codes";
 import { searchRomeVideos, summarizeVideo, type VideoResult } from "@/lib/youtube.functions";
+
+const SEARCH_TEMPLATES = [
+  "Métier de [métier] témoignage",
+  "[métier] témoignage professionnel",
+  "Je suis [métier]",
+  "Une journée dans la vie de [métier]",
+  "Découvrir le métier de [métier]",
+] as const;
 import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader } from "@/components/SiteHeader";
 
@@ -119,6 +127,7 @@ function Index() {
   }
 
   const label = useMemo(() => lookupRomeLabel(code) ?? "", [code]);
+  const [template, setTemplate] = useState<string>(SEARCH_TEMPLATES[0]);
   // Libellé utilisé pour la recherche YouTube : le métier saisi librement est prioritaire
   // sur le libellé généré à partir du code ROME.
   const searchLabel = useMemo(
@@ -142,7 +151,11 @@ function Index() {
     setLoading(true);
     try {
       const items = await search({
-        data: { romeCode: normalizeRomeCode(code) || "LIBRE", romeLabel: searchLabel },
+        data: {
+          romeCode: normalizeRomeCode(code) || "LIBRE",
+          romeLabel: searchLabel,
+          query: template.replace("[métier]", searchLabel),
+        },
       });
       setResults(items);
       if (items.length === 0) {
@@ -367,6 +380,26 @@ function Index() {
                 Si ce champ est rempli, il est utilisé pour la recherche YouTube à la place du libellé
                 ROME. Laissez-le vide pour utiliser le libellé généré.
               </p>
+            </div>
+            <div className="space-y-1.5 sm:col-span-2">
+              <label
+                htmlFor="search-template"
+                className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+              >
+                Formulation de la recherche
+              </label>
+              <select
+                id="search-template"
+                value={template}
+                onChange={(e) => setTemplate(e.target.value)}
+                className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground outline-none focus:border-ring focus:ring-2 focus:ring-ring/30"
+              >
+                {SEARCH_TEMPLATES.map((t) => (
+                  <option key={t} value={t}>
+                    {t.replace("[métier]", searchLabel || "[métier]")}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
