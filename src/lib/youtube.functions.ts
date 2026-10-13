@@ -15,6 +15,7 @@ export type VideoResult = {
 const SearchInput = z.object({
   romeCode: z.string().min(1),
   romeLabel: z.string().min(1),
+  query: z.string().optional(),
 });
 
 function parseLengthText(text: string): number {
@@ -58,7 +59,7 @@ export const searchRomeVideos = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => SearchInput.parse(input))
   .handler(async ({ data }): Promise<VideoResult[]> => {
     // Recherche anonyme, comme un visiteur YouTube non connecté : aucune clé API requise.
-    const query = `${data.romeLabel} métier`;
+    const query = data.query?.trim() || `${data.romeLabel} métier`;
     const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}&hl=fr&gl=FR`;
     const res = await fetch(url, {
       headers: {
