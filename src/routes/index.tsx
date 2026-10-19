@@ -135,6 +135,18 @@ function Index() {
     [metierLibre, label],
   );
 
+  function handleResetForm() {
+    setCode("");
+    setMetierLibre("");
+    setTemplate(SEARCH_TEMPLATES[0]);
+    setResults(null);
+    setSelected(null);
+    setSummary("");
+    setTranscript(null);
+    setSaved(false);
+    setError(null);
+  }
+
   async function handleSearch() {
     setError(null);
     setResults(null);
@@ -403,14 +415,24 @@ function Index() {
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={() => void handleSearch()}
-            disabled={loading}
-            className="mt-5 h-12 rounded-md bg-destructive px-8 text-sm font-bold uppercase tracking-wide text-destructive-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
-          >
-            {loading ? "Recherche en cours…" : "Rechercher"}
-          </button>
+          <div className="mt-5 flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={() => void handleSearch()}
+              disabled={loading}
+              className="h-12 rounded-md bg-destructive px-8 text-sm font-bold uppercase tracking-wide text-destructive-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
+            >
+              {loading ? "Recherche en cours…" : "Rechercher"}
+            </button>
+            <button
+              type="button"
+              onClick={handleResetForm}
+              disabled={loading}
+              className="h-12 rounded-md border border-border bg-secondary px-6 text-sm font-bold uppercase tracking-wide text-secondary-foreground transition-colors hover:bg-accent disabled:opacity-50"
+            >
+              Vider le formulaire
+            </button>
+          </div>
 
           {error && (
             <p className="mt-4 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive">
