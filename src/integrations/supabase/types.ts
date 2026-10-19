@@ -14,6 +14,27 @@ export type Database = {
   }
   public: {
     Tables: {
+      collections_videos: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          videos: Json
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          videos: Json
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          videos?: Json
+        }
+        Relationships: []
+      }
       videos_metiers: {
         Row: {
           channel_title: string | null

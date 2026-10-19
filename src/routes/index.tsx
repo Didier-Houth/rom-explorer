@@ -13,6 +13,9 @@ const SEARCH_TEMPLATES = [
 ] as const;
 import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader } from "@/components/SiteHeader";
+import { Button } from "@/components/ui/button";
+import { Save } from "lucide-react";
+import { collectionPayload, type CollectionItem } from "@/lib/collections";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -81,12 +84,6 @@ function Field({
   );
 }
 
-type CollectionItem = {
-  romeCode: string;
-  romeLabel: string;
-  video: VideoResult;
-};
-
 type BatchRow = {
   romeCode: string;
   romeLabel: string;
@@ -117,13 +114,48 @@ function Index() {
   const [batchError, setBatchError] = useState<string | null>(null);
 
   const [collection, setCollection] = useState<CollectionItem[]>([]);
+  const [collectionName, setCollectionName] = useState("");
+  const [collectionSaving, setCollectionSaving] = useState(false);
+  const [collectionMessage, setCollectionMessage] = useState<string | null>(null);
+  const [collectionError, setCollectionError] = useState<string | null>(null);
+  const [videoTexts, setVideoTexts] = useState<Record<string, { transcript: string | null; summary: string }>>({});
 
   function toggleCollection(video: VideoResult, romeCode: string, romeLabel: string) {
+    setCollectionMessage(null);
     setCollection((prev) =>
       prev.some((i) => i.video.videoId === video.videoId)
         ? prev.filter((i) => i.video.videoId !== video.videoId)
-        : [...prev, { romeCode, romeLabel, video }],
+        : [...prev, { romeCode, romeLabel, video, ...videoTexts[video.videoId] }],
     );
+  }
+
+  async function handleSaveCollection() {
+    if (collectionSaving) return;
+    setCollectionError(null);
+    setCollectionMessage(null);
+    try {
+      collectionPayload(collectionName, collection);
+      setCollectionSaving(true);
+      const complete: CollectionItem[] = [];
+      for (const item of collection) {
+        setCollectionMessage(`Préparation des vidéos : ${complete.length + 1}/${collection.length}…`);
+        const text = item.summary ? { summary: item.summary, transcript: item.transcript ?? null }
+          : videoTexts[item.video.videoId] ?? await summarize({ data: {
+            videoId: item.video.videoId, title: item.video.title,
+            romeLabel: item.romeLabel, description: item.video.description,
+          } });
+        complete.push({ ...item, ...text });
+      }
+      setCollection(complete);
+      const { error: dbError } = await supabase.from("collections_videos").insert(collectionPayload(collectionName, complete));
+      if (dbError) throw new Error("La collection n'a pas pu être enregistrée. Réessayez.");
+      setCollectionMessage(`Collection « ${collectionName.trim()} » enregistrée (${complete.length} vidéos).`);
+    } catch (e) {
+      setCollectionMessage(null);
+      setCollectionError(e instanceof Error ? e.message : "Enregistrement impossible. Réessayez.");
+    } finally {
+      setCollectionSaving(false);
+    }
   }
 
   const label = useMemo(() => lookupRomeLabel(code) ?? "", [code]);
@@ -198,6 +230,8 @@ function Index() {
       });
       setSummary(res.summary);
       setTranscript(res.transcript);
+      setVideoTexts((prev) => ({ ...prev, [video.videoId]: res }));
+      setCollection((prev) => prev.map((item) => item.video.videoId === video.videoId ? { ...item, ...res } : item));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Le résumé a échoué.");
     } finally {
@@ -484,7 +518,8 @@ function Index() {
                       <input
                         type="checkbox"
                         checked={checked}
-                        onChange={() => toggleCollection(v, normalizeRomeCode(code), label)}
+                        disabled={collectionSaving}
+                        onChange={() => toggleCollection(v, normalizeRomeCode(code) || "LIBRE", searchLabel)}
                         className="h-4 w-4 accent-[hsl(var(--primary))]"
                       />
                       Ajouter à ma collection
@@ -516,13 +551,29 @@ function Index() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => setCollection([])}
+                  disabled={collectionSaving}
+                  onClick={() => { setCollection([]); setCollectionMessage(null); setCollectionError(null); }}
                   className="h-10 rounded-md border border-border bg-secondary px-4 text-sm font-medium text-secondary-foreground hover:bg-accent"
                 >
                   Vider
                 </button>
               </div>
             </div>
+            <div className="mt-4 flex flex-wrap items-end gap-3">
+              <div className="w-full space-y-1.5 sm:w-80">
+                <label htmlFor="collection-name" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Nom de la collection</label>
+                <input id="collection-name" value={collectionName} disabled={collectionSaving}
+                  onChange={(e) => { setCollectionName(e.target.value); setCollectionMessage(null); }}
+                  placeholder="Nom de votre collection"
+                  className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground outline-none focus:border-ring" />
+              </div>
+              <Button size="lg" className="h-11" disabled={collectionSaving || summarizing}
+                onClick={() => void handleSaveCollection()}>
+                <Save aria-hidden="true" />{collectionSaving ? "Enregistrement en cours…" : "Enregistrer la collection"}
+              </Button>
+            </div>
+            {collectionMessage && <p role="status" className="mt-3 text-sm text-primary">{collectionMessage}</p>}
+            {collectionError && <p role="alert" className="mt-3 text-sm text-destructive">{collectionError}</p>}
             <ul className="mt-4 divide-y divide-border">
               {collection.map((i) => (
                 <li key={i.video.videoId} className="flex items-start gap-3 py-3">
@@ -541,8 +592,9 @@ function Index() {
                   </button>
                   <button
                     type="button"
+                    disabled={collectionSaving}
                     onClick={() =>
-                      setCollection((prev) => prev.filter((x) => x.video.videoId !== i.video.videoId))
+                      { setCollection((prev) => prev.filter((x) => x.video.videoId !== i.video.videoId)); setCollectionMessage(null); }
                     }
                     className="rounded-md border border-border px-2 py-1 text-xs font-medium text-destructive hover:bg-destructive/10"
                   >
