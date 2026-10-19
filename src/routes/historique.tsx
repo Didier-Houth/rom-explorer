@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader } from "@/components/SiteHeader";
+import { collectionPayload } from "@/lib/collections";
 
 export const Route = createFileRoute("/historique")({
   head: () => ({
@@ -61,6 +62,16 @@ function CopyButton({ value, label }: { value: string; label: string }) {
 function HistoriquePage() {
   const [query, setQuery] = useState("");
   const [openId, setOpenId] = useState<string | null>(null);
+  const collectionsQuery = useQuery({
+    queryKey: ["collections-videos"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("collections_videos").select("*").order("created_at", { ascending: false });
+      if (error) throw new Error("Lecture des collections impossible.");
+      return (data ?? []).map((collection) => ({ ...collection,
+        videos: collection.videos as ReturnType<typeof collectionPayload>["videos"],
+      }));
+    },
+  });
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["historique"],
@@ -177,6 +188,31 @@ function HistoriquePage() {
             </table>
           </div>
         )}
+        <section className="mt-12">
+          <h2 className="font-display text-2xl font-bold text-foreground">Collections enregistrées</h2>
+          {collectionsQuery.isLoading && <p className="mt-4 text-sm text-muted-foreground">Chargement des collections…</p>}
+          {collectionsQuery.error && <p role="alert" className="mt-4 text-sm text-destructive">Lecture des collections impossible.</p>}
+          {collectionsQuery.data?.length === 0 && <p className="mt-4 text-sm text-muted-foreground">Aucune collection enregistrée.</p>}
+          <div className="mt-4 divide-y divide-border">
+            {collectionsQuery.data?.filter((c) => !query.trim() || `${c.name} ${c.videos.map(v => `${v.rome_code} ${v.rome_label} ${v.title}`).join(" ")}`.toLowerCase().includes(query.trim().toLowerCase())).map((c) => (
+              <details key={c.id} className="py-4">
+                <summary className="cursor-pointer text-sm font-semibold text-foreground">{c.name} · {c.videos.length} vidéos · {new Date(c.created_at).toLocaleDateString("fr-FR")}</summary>
+                <ul className="mt-4 space-y-6">
+                  {c.videos.map((v, index) => (
+                    <li key={`${v.video_id}-${index}`} className="space-y-2 border-l-2 border-primary pl-4">
+                      <a href={v.watch_link} target="_blank" rel="noreferrer" className="font-semibold text-primary underline">{v.title}</a>
+                      <p className="text-xs text-muted-foreground">{v.rome_code} · {v.rome_label} · {v.channel_title} · {v.duration_seconds} s</p>
+                      <div className="flex flex-wrap gap-2"><CopyButton value={v.long_link} label="Lien long" /><CopyButton value={v.watch_link} label="Lien watch" /></div>
+                      <p className="whitespace-pre-wrap text-sm text-foreground">{v.summary || "Résumé indisponible"}</p>
+                      <details className="text-sm text-muted-foreground"><summary className="cursor-pointer">Transcription</summary><p className="mt-2 whitespace-pre-wrap">{v.transcript || "Transcription indisponible pour cette vidéo."}</p></details>
+                      <details className="text-sm text-muted-foreground"><summary className="cursor-pointer">Description de la vidéo</summary><p className="mt-2 whitespace-pre-wrap">{v.description || "Aucune description disponible."}</p></details>
+                    </li>
+                  ))}
+                </ul>
+              </details>
+            ))}
+          </div>
+        </section>
       </main>
       <footer className="mt-16 border-t border-border py-8 text-center text-xs text-muted-foreground">
         Outil interne France Travail · Historique des vidéos métiers
