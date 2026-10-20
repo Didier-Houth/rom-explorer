@@ -561,7 +561,7 @@ function Index() {
                 <button
                   type="button"
                   disabled={collectionSaving}
-                  onClick={() => { setCollection([]); setCollectionMessage(null); setCollectionError(null); }}
+                  onClick={() => { setCollection([]); setCollectionCode(""); setCollectionMetier(""); setCollectionMessage(null); setCollectionError(null); }}
                   className="h-10 rounded-md border border-border bg-secondary px-4 text-sm font-medium text-secondary-foreground hover:bg-accent"
                 >
                   Vider
@@ -574,6 +574,20 @@ function Index() {
                 <input id="collection-name" value={collectionName} disabled={collectionSaving}
                   onChange={(e) => { setCollectionName(e.target.value); setCollectionMessage(null); }}
                   placeholder="Nom de votre collection"
+                  className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground outline-none focus:border-ring" />
+              </div>
+              <div className="w-32 space-y-1.5">
+                <label htmlFor="collection-rome" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Code ROME</label>
+                <input id="collection-rome" value={collectionCode} disabled={collectionSaving}
+                  onChange={(e) => { setCollectionCode(e.target.value.toUpperCase()); setCollectionMessage(null); }}
+                  placeholder="Ex. M1805"
+                  className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm font-semibold text-foreground outline-none focus:border-ring" />
+              </div>
+              <div className="w-full space-y-1.5 sm:w-64">
+                <label htmlFor="collection-metier" className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Nom du métier ROME</label>
+                <input id="collection-metier" value={collectionMetier} disabled={collectionSaving}
+                  onChange={(e) => { setCollectionMetier(e.target.value); setCollectionMessage(null); }}
+                  placeholder="Nom du métier de la recherche"
                   className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground outline-none focus:border-ring" />
               </div>
               <Button size="lg" className="h-11" disabled={collectionSaving || summarizing}
