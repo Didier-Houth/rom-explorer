@@ -1,4 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Library } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
 import { lookupRomeLabel, normalizeRomeCode, ROME_CODES } from "@/lib/rome-codes";
@@ -377,6 +378,16 @@ function Index() {
           YouTube de 4 minutes maximum, récupère leurs liens de partage et rédige un résumé de la
           transcription.
         </p>
+
+        <Link
+          to="/collections"
+          className="mt-8 flex w-full items-center justify-center gap-4 rounded-2xl bg-accent-foreground px-8 py-8 font-display text-2xl font-extrabold text-background shadow-lg transition-transform hover:scale-[1.01] sm:text-3xl"
+          style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
+        >
+          <Library className="h-10 w-10" />
+          Accéder aux collections
+        </Link>
+
 
         <section className="mt-10 rounded-xl border border-border bg-card p-6 shadow-sm">
           <div className="grid gap-4 sm:grid-cols-2">
