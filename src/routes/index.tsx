@@ -186,6 +186,12 @@ function Index() {
     setTranscript(null);
     setSaved(false);
     setError(null);
+    setCollection([]);
+    setCollectionName("");
+    setCollectionCode("");
+    setCollectionMetier("");
+    setCollectionMessage(null);
+    setCollectionError(null);
   }
 
   async function handleSearch() {
@@ -570,8 +576,7 @@ function Index() {
           )}
         </section>
 
-        {collection.length > 0 && (
-          <section className="mt-10 rounded-xl border border-border bg-card p-6 shadow-sm">
+        <section className="mt-10 rounded-xl border border-border bg-card p-6 shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <h2 className="font-display text-xl font-bold text-foreground">
                 Ma collection ({collection.length})
@@ -579,6 +584,7 @@ function Index() {
               <div className="flex gap-2">
                 <button
                   type="button"
+                  disabled={collection.length === 0}
                   onClick={() =>
                     void navigator.clipboard.writeText(
                       collection.map((i) => `${i.romeCode} — ${i.video.title}\n${i.video.watchLink}`).join("\n\n"),
@@ -590,7 +596,7 @@ function Index() {
                 </button>
                 <button
                   type="button"
-                  disabled={collectionSaving}
+                  disabled={collectionSaving || collection.length === 0}
                   onClick={() => { setCollection([]); setCollectionCode(""); setCollectionMetier(""); setCollectionMessage(null); setCollectionError(null); }}
                   className="h-10 rounded-md border border-border bg-secondary px-4 text-sm font-medium text-secondary-foreground hover:bg-accent"
                 >
@@ -620,13 +626,18 @@ function Index() {
                   placeholder="Nom du métier de la recherche"
                   className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground outline-none focus:border-ring" />
               </div>
-              <Button size="lg" className="h-11" disabled={collectionSaving || summarizing}
+              <Button size="lg" className="h-11" disabled={collectionSaving || summarizing || collection.length === 0}
                 onClick={() => void handleSaveCollection()}>
                 <Save aria-hidden="true" />{collectionSaving ? "Enregistrement en cours…" : "Enregistrer la collection"}
               </Button>
             </div>
             {collectionMessage && <p role="status" className="mt-3 text-sm text-primary">{collectionMessage}</p>}
             {collectionError && <p role="alert" className="mt-3 text-sm text-destructive">{collectionError}</p>}
+            {collection.length === 0 ? (
+              <p className="mt-4 rounded-lg border border-dashed border-border bg-background px-4 py-8 text-center text-sm text-muted-foreground">
+                Aucune vidéo dans la collection pour l'instant : cochez « Ajouter à ma collection » sous une vidéo trouvée.
+              </p>
+            ) : (
             <ul className="mt-4 divide-y divide-border">
               {collection.map((i) => (
                 <li key={i.video.videoId} className="flex items-start gap-3 py-3">
@@ -656,8 +667,8 @@ function Index() {
                 </li>
               ))}
             </ul>
+            )}
           </section>
-        )}
 
         {selected && (
           <section className="mt-10 grid gap-6 lg:grid-cols-2">
