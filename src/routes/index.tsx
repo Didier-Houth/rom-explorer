@@ -211,6 +211,7 @@ function Index() {
         },
       });
       setResults(items);
+      document.getElementById("resultats")?.scrollIntoView({ behavior: "smooth", block: "start" });
       if (items.length === 0) {
         setError("Aucune vidéo de moins de 4 minutes trouvée pour ce métier.");
       }
@@ -484,12 +485,35 @@ function Index() {
           )}
         </section>
 
-        {results && results.length > 0 && (
-          <section className="mt-10">
-            <h2 className="font-display text-xl font-bold text-foreground">
-              Vidéos de moins de 4 minutes
-            </h2>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <section id="resultats" className="mt-10 rounded-xl border border-border bg-card p-6 shadow-sm">
+          <h2 className="font-display text-xl font-bold text-foreground">
+            Vidéos trouvées (4 minutes maximum)
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Voici le déroulé complet : les vidéos trouvées par la recherche viennent s'afficher
+            dans cet espace, juste sous le formulaire.
+          </p>
+          <ol className="mt-4 grid gap-3 text-sm text-muted-foreground sm:grid-cols-2 lg:grid-cols-4">
+            <li className="rounded-lg border border-border bg-background p-3">
+              <span className="font-bold text-foreground">1. Rechercher</span>
+              <p className="mt-1">Saisissez un code ROME ou un métier libre, puis cliquez sur « Rechercher ».</p>
+            </li>
+            <li className="rounded-lg border border-border bg-background p-3">
+              <span className="font-bold text-foreground">2. Lire et résumer</span>
+              <p className="mt-1">Cliquez sur une vidéo ci-dessous pour la lire ici et obtenir son résumé.</p>
+            </li>
+            <li className="rounded-lg border border-border bg-background p-3">
+              <span className="font-bold text-foreground">3. Copier les liens</span>
+              <p className="mt-1">Récupérez le « Lien long » et le « Lien watch » de la vidéo retenue.</p>
+            </li>
+            <li className="rounded-lg border border-border bg-background p-3">
+              <span className="font-bold text-foreground">4. Constituer la collection</span>
+              <p className="mt-1">Cochez les vidéos à garder, nommez la collection et enregistrez-la.</p>
+            </li>
+          </ol>
+
+          {results && results.length > 0 ? (
+            <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {results.map((v) => {
                 const checked = collection.some((i) => i.video.videoId === v.videoId);
                 return (
@@ -537,8 +561,14 @@ function Index() {
                 );
               })}
             </div>
-          </section>
-        )}
+          ) : (
+            <p className="mt-5 rounded-lg border border-dashed border-border bg-background px-4 py-10 text-center text-sm text-muted-foreground">
+              {loading
+                ? "Recherche en cours : les vidéos vont s'afficher ici."
+                : "Aucune vidéo affichée pour l'instant : lancez une recherche et les vidéos trouvées apparaîtront dans cet espace."}
+            </p>
+          )}
+        </section>
 
         {collection.length > 0 && (
           <section className="mt-10 rounded-xl border border-border bg-card p-6 shadow-sm">
