@@ -196,7 +196,13 @@ function HistoriquePage() {
           <div className="mt-4 divide-y divide-border">
             {collectionsQuery.data?.filter((c) => !query.trim() || `${c.name} ${c.videos.map(v => `${v.rome_code} ${v.rome_label} ${v.title}`).join(" ")}`.toLowerCase().includes(query.trim().toLowerCase())).map((c) => (
               <details key={c.id} className="py-4">
-                <summary className="cursor-pointer text-sm font-semibold text-foreground">{c.name} · {c.videos.length} vidéos · {new Date(c.created_at).toLocaleDateString("fr-FR")}</summary>
+                <summary className="cursor-pointer text-sm font-semibold text-foreground">
+                  {c.name}
+                  {(c.rome_code && c.rome_code !== "LIBRE") || c.rome_label
+                    ? ` · ${c.rome_code === "LIBRE" ? "" : c.rome_code + (c.rome_label ? " — " : "")}${c.rome_label}`
+                    : ""}
+                  {" · "}{c.videos.length} vidéos · {new Date(c.created_at).toLocaleDateString("fr-FR")}
+                </summary>
                 <ul className="mt-4 space-y-6">
                   {c.videos.map((v, index) => (
                     <li key={`${v.video_id}-${index}`} className="space-y-2 border-l-2 border-primary pl-4">
