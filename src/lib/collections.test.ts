@@ -11,10 +11,17 @@ const item: CollectionItem = {
 };
 
 describe("named collections", () => {
-  test("stores the name and every selected video", () => {
-    const result = collectionPayload(" Métiers numériques ", [item, { ...item, video: { ...item.video, videoId: "secondvideo" } }]);
+  test("stores the name, the ROME reference and every selected video", () => {
+    const result = collectionPayload(" Métiers numériques ", [item, { ...item, video: { ...item.video, videoId: "secondvideo" } }], { romeCode: "M1805", romeLabel: "Développeur" });
     assert.equal(result.name, "Métiers numériques");
+    assert.equal(result.rome_code, "M1805");
+    assert.equal(result.rome_label, "Développeur");
     assert.deepEqual(result.videos.map(v => v.video_id), ["abcdefghijk", "secondvideo"]);
+  });
+  test("defaults the ROME reference to LIBRE without a code", () => {
+    const result = collectionPayload("Collection", [item]);
+    assert.equal(result.rome_code, "LIBRE");
+    assert.equal(result.rome_label, "");
   });
   test("preserves all attached information", () => {
     assert.deepEqual(collectionPayload("Collection", [item]).videos[0], {
