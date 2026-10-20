@@ -635,7 +635,7 @@ function Index() {
             {collectionError && <p role="alert" className="mt-3 text-sm text-destructive">{collectionError}</p>}
             {collection.length === 0 ? (
               <p className="mt-4 rounded-lg border border-dashed border-border bg-background px-4 py-8 text-center text-sm text-muted-foreground">
-                Aucun vidéo dans la collection pour l'instant : cochez « Ajouter à ma collection » sous une vidéo trouvée.
+                Aucune vidéo dans la collection pour l'instant : cochez « Ajouter à ma collection » sous une vidéo trouvée.
               </p>
             ) : (
             <ul className="mt-4 divide-y divide-border">
