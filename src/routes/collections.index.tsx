@@ -38,7 +38,17 @@ function CollectionsPage() {
     <div className="min-h-screen bg-background">
       <SiteHeader />
       <main className="mx-auto max-w-6xl px-6 py-12">
-        <Link to="/" className="text-sm font-semibold text-primary hover:underline">← Retour à la recherche</Link>
+        <div className="flex flex-wrap items-center gap-3">
+          <Link
+            to="/"
+            className="inline-flex h-12 items-center gap-2 rounded-md bg-primary px-6 text-sm font-bold uppercase tracking-wide text-primary-foreground transition-opacity hover:opacity-90"
+          >
+            ← Formulaire recherche
+          </Link>
+          <Link to="/historique" className="text-sm font-semibold text-primary hover:underline">
+            Historique
+          </Link>
+        </div>
         <h1 className="mt-4 font-display text-4xl font-extrabold text-foreground">Collections enregistrées</h1>
         {error && <p className="mt-6 text-destructive">{error}</p>}
         {!rows && !error && <p className="mt-6 text-muted-foreground">Chargement…</p>}
