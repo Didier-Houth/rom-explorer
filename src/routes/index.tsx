@@ -381,8 +381,7 @@ function Index() {
 
         <Link
           to="/collections"
-          className="mt-8 flex w-full items-center justify-center gap-4 rounded-2xl bg-accent-foreground px-8 py-8 font-display text-2xl font-extrabold text-background shadow-lg transition-transform hover:scale-[1.01] sm:text-3xl"
-          style={{ backgroundColor: "hsl(var(--primary))", color: "hsl(var(--primary-foreground))" }}
+          className="mt-8 flex w-full items-center justify-center gap-4 rounded-2xl bg-primary px-8 py-8 font-display text-2xl font-extrabold text-primary-foreground shadow-lg transition-transform hover:scale-[1.01] sm:text-3xl"
         >
           <Library className="h-10 w-10" />
           Accéder aux collections
