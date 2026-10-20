@@ -19,18 +19,24 @@ export type Database = {
           created_at: string
           id: string
           name: string
+          rome_code: string
+          rome_label: string
           videos: Json
         }
         Insert: {
           created_at?: string
           id?: string
           name: string
+          rome_code?: string
+          rome_label?: string
           videos: Json
         }
         Update: {
           created_at?: string
           id?: string
           name?: string
+          rome_code?: string
+          rome_label?: string
           videos?: Json
         }
         Relationships: []
