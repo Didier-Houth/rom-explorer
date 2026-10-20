@@ -8,11 +8,18 @@ export type CollectionItem = {
   summary?: string;
 };
 
-export function collectionPayload(name: string, items: CollectionItem[]) {
+export type CollectionMeta = {
+  romeCode?: string;
+  romeLabel?: string;
+};
+
+export function collectionPayload(name: string, items: CollectionItem[], meta: CollectionMeta = {}) {
   if (!name.trim()) throw new Error("Donnez un nom à votre collection.");
   if (!items.length) throw new Error("Sélectionnez au moins une vidéo.");
   return {
     name: name.trim(),
+    rome_code: meta.romeCode?.trim() || "LIBRE",
+    rome_label: meta.romeLabel?.trim() || "",
     videos: items.map((item) => ({
       rome_code: item.romeCode || "LIBRE",
       rome_label: item.romeLabel,
