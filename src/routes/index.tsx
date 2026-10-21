@@ -177,6 +177,8 @@ function Index() {
   );
   // Codes OGR rattachés au code ROME saisi.
   const ogrOptions = useMemo(() => ogrCodesForRome(romeCode), [romeCode]);
+  // Tous les codes ROME triés (famille A à N) pour la liste complète.
+  const romeOptions = useMemo(() => Object.keys(ROME_CODES).sort(), []);
   const [template, setTemplate] = useState<string>(SEARCH_TEMPLATES[0]);
   // Libellé utilisé pour la recherche YouTube : le métier saisi librement est prioritaire
   // sur le libellé généré à partir du code ROME.
@@ -430,6 +432,32 @@ function Index() {
                   </option>
                 ))}
               </datalist>
+              <select
+                id="rome-list-full"
+                aria-label="Liste complète des codes ROME (A à N)"
+                value={ROME_CODES[romeCode] !== undefined ? romeCode : ""}
+                onChange={(e) => {
+                  const next = e.target.value;
+                  setRomeCode(next);
+                  if (next && ogrCode && !ogrCodesForRome(next).includes(ogrCode)) {
+                    setOgrCode("");
+                  }
+                }}
+                className="h-10 w-full rounded-md border border-input bg-background px-2 text-sm text-foreground outline-none focus:border-ring focus:ring-2 focus:ring-ring/30"
+              >
+                <option value="">Liste complète des codes ROME (A à N)</option>
+                {[...new Set(romeOptions.map((c) => c[0]))].map((letter) => (
+                  <optgroup key={letter} label={`Famille ${letter}`}>
+                    {romeOptions
+                      .filter((c) => c[0] === letter)
+                      .map((c) => (
+                        <option key={c} value={c}>
+                          {`${c} – ${ROME_CODES[c]}`}
+                        </option>
+                      ))}
+                  </optgroup>
+                ))}
+              </select>
             </div>
             <div className="space-y-1.5">
               <label
