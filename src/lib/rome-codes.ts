@@ -22,6 +22,24 @@ export function isRomeCodeFormat(input: string): boolean {
   return /^[A-Z]\d{4}$/.test(normalizeRomeCode(input));
 }
 
+let ogrByRome: Record<string, string[]> | null = null;
+
+/** Codes OGR associés à un code ROME, triés par ordre croissant. */
+export function ogrCodesForRome(romeCode: string): string[] {
+  const rome = normalizeRomeCode(romeCode);
+  if (!rome) return [];
+  if (!ogrByRome) {
+    ogrByRome = {};
+    for (const [ogr, [, r]] of Object.entries(OGR_CODES)) {
+      (ogrByRome[r] ??= []).push(ogr);
+    }
+    for (const list of Object.values(ogrByRome)) {
+      list.sort((a, b) => Number(a) - Number(b));
+    }
+  }
+  return ogrByRome[rome] ?? [];
+}
+
 /** Renvoie « M1805 – OGR 38949 » si un code OGR est saisi, sinon le code ROME. */
 export function displayRomeCodePair(romeCode: string, ogrCode: string): string {
   const rome = normalizeRomeCode(romeCode);
