@@ -4,7 +4,7 @@ import data from "./rome-data.json";
 // Code ROME -> premier nom de métier de la fiche.
 export const ROME_CODES: Record<string, string> = data.rome;
 // Code OGR -> [nom de métier, code ROME].
-export const OGR_CODES: Record<string, [string, string]> = data.ogr as Record<string, [string, string]>;
+export const OGR_CODES: Record<string, [string, string]> = data.ogr as unknown as Record<string, [string, string]>;
 
 export function normalizeRomeCode(input: string): string {
   return input.trim().toUpperCase().replace(/\s+/g, "");
