@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Library } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
-import { displayRomeCode, lookupRomeLabel, normalizeRomeCode, ROME_CODES } from "@/lib/rome-codes";
+import { displayRomeCodePair, isRomeCodeFormat, lookupRomeLabel, normalizeRomeCode, ROME_CODES } from "@/lib/rome-codes";
 import { searchRomeVideos, summarizeVideo, type VideoResult } from "@/lib/youtube.functions";
 
 const SEARCH_TEMPLATES = [
@@ -98,7 +98,8 @@ function Index() {
   const search = useServerFn(searchRomeVideos);
   const summarize = useServerFn(summarizeVideo);
 
-  const [code, setCode] = useState("");
+  const [romeCode, setRomeCode] = useState("");
+  const [ogrCode, setOgrCode] = useState("");
   const [metierLibre, setMetierLibre] = useState("");
   const [results, setResults] = useState<VideoResult[] | null>(null);
   const [selected, setSelected] = useState<VideoResult | null>(null);
