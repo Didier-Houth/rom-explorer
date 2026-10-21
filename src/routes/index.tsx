@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Library } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
-import { displayRomeCodePair, isRomeCodeFormat, lookupRomeLabel, normalizeRomeCode, ogrCodesForRome, ROME_CODES } from "@/lib/rome-codes";
+import { displayRomeCodePair, isRomeCodeFormat, lookupRomeLabel, normalizeRomeCode, OGR_CODES, ogrCodesForRome, ROME_CODES } from "@/lib/rome-codes";
 import { searchRomeVideos, summarizeVideo, type VideoResult } from "@/lib/youtube.functions";
 
 const SEARCH_TEMPLATES = [
