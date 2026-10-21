@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Library } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
-import { displayRomeCode, lookupRomeLabel, normalizeRomeCode, ROME_CODES } from "@/lib/rome-codes";
+import { displayRomeCodePair, isRomeCodeFormat, lookupRomeLabel, normalizeRomeCode, ROME_CODES } from "@/lib/rome-codes";
 import { searchRomeVideos, summarizeVideo, type VideoResult } from "@/lib/youtube.functions";
 
 const SEARCH_TEMPLATES = [
@@ -98,7 +98,8 @@ function Index() {
   const search = useServerFn(searchRomeVideos);
   const summarize = useServerFn(summarizeVideo);
 
-  const [code, setCode] = useState("");
+  const [romeCode, setRomeCode] = useState("");
+  const [ogrCode, setOgrCode] = useState("");
   const [metierLibre, setMetierLibre] = useState("");
   const [results, setResults] = useState<VideoResult[] | null>(null);
   const [selected, setSelected] = useState<VideoResult | null>(null);
@@ -168,7 +169,11 @@ function Index() {
     }
   }
 
-  const label = useMemo(() => lookupRomeLabel(code) ?? "", [code]);
+  // Libellé du métier : depuis le code ROME ou, à défaut, depuis le code OGR.
+  const label = useMemo(
+    () => lookupRomeLabel(romeCode) ?? (ogrCode ? lookupRomeLabel(ogrCode) ?? "" : ""),
+    [romeCode, ogrCode],
+  );
   const [template, setTemplate] = useState<string>(SEARCH_TEMPLATES[0]);
   // Libellé utilisé pour la recherche YouTube : le métier saisi librement est prioritaire
   // sur le libellé généré à partir du code ROME.
@@ -178,7 +183,8 @@ function Index() {
   );
 
   function handleResetForm() {
-    setCode("");
+    setRomeCode("");
+    setOgrCode("");
     setMetierLibre("");
     setTemplate(SEARCH_TEMPLATES[0]);
     setResults(null);
@@ -204,7 +210,7 @@ function Index() {
     setSaved(false);
     if (!searchLabel) {
       setError(
-        "Saisissez un code ROME reconnu (exemple : M1805) ou un nom de métier libre.",
+        "Saisissez un code ROME reconnu (exemple : M1805), un code OGR (exemple : 38949) ou un nom de métier libre.",
       );
       return;
     }
@@ -212,7 +218,7 @@ function Index() {
     try {
       const items = await search({
         data: {
-          romeCode: displayRomeCode(code) || "LIBRE",
+          romeCode: displayRomeCodePair(romeCode, ogrCode) || "LIBRE",
           romeLabel: searchLabel,
           query: template.replace("[métier]", searchLabel),
         },
@@ -260,7 +266,7 @@ function Index() {
     if (!selected) return;
     setError(null);
     const { error: dbError } = await supabase.from("videos_metiers").insert({
-      rome_code: displayRomeCode(code),
+      rome_code: displayRomeCodePair(romeCode, ogrCode),
       rome_label: searchLabel,
       video_id: selected.videoId,
       title: selected.title,
@@ -389,7 +395,7 @@ function Index() {
 
 
         <section className="mt-10 rounded-xl border border-border bg-card p-6 shadow-sm">
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-3">
             <div className="space-y-1.5">
               <label
                 htmlFor="rome"
@@ -399,12 +405,12 @@ function Index() {
               </label>
               <input
                 id="rome"
-                value={code}
-                onChange={(e) => setCode(e.target.value.toUpperCase())}
+                value={romeCode}
+                onChange={(e) => setRomeCode(e.target.value.toUpperCase())}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") void handleSearch();
                 }}
-                placeholder="Ex. M1805 ou code OGR 38949"
+                placeholder="Ex. M1805"
                 list="rome-list"
                 className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm font-semibold text-foreground outline-none focus:border-ring focus:ring-2 focus:ring-ring/30"
               />
@@ -415,6 +421,25 @@ function Index() {
                   </option>
                 ))}
               </datalist>
+            </div>
+            <div className="space-y-1.5">
+              <label
+                htmlFor="ogr"
+                className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+              >
+                Code OGR
+              </label>
+              <input
+                id="ogr"
+                value={ogrCode}
+                onChange={(e) => setOgrCode(e.target.value.replace(/\D/g, ""))}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") void handleSearch();
+                }}
+                inputMode="numeric"
+                placeholder="Ex. 38949"
+                className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm font-semibold text-foreground outline-none focus:border-ring focus:ring-2 focus:ring-ring/30"
+              />
             </div>
             <div className="space-y-1.5">
               <label
@@ -431,7 +456,7 @@ function Index() {
                 className="h-11 w-full rounded-md border border-border bg-secondary px-3 text-sm text-foreground outline-none"
               />
             </div>
-            <div className="space-y-1.5 sm:col-span-2">
+            <div className="space-y-1.5 sm:col-span-3">
               <label
                 htmlFor="metier-libre"
                 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
@@ -453,7 +478,7 @@ function Index() {
                 ROME. Laissez-le vide pour utiliser le libellé généré.
               </p>
             </div>
-            <div className="space-y-1.5 sm:col-span-2">
+            <div className="space-y-1.5 sm:col-span-3">
               <label
                 htmlFor="search-template"
                 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
@@ -568,7 +593,7 @@ function Index() {
                         type="checkbox"
                         checked={checked}
                         disabled={collectionSaving}
-                        onChange={() => toggleCollection(v, normalizeRomeCode(code) || "LIBRE", searchLabel)}
+                        onChange={() => toggleCollection(v, displayRomeCodePair(romeCode, ogrCode) || "LIBRE", searchLabel)}
                         className="h-4 w-4 accent-[hsl(var(--primary))]"
                       />
                       Ajouter à ma collection
@@ -779,7 +804,13 @@ function Index() {
                             onClick={() => {
                               setSelected(r.video);
                               setSummary(r.summary);
-                              setCode(r.romeCode);
+                              if (isRomeCodeFormat(r.romeCode)) {
+                                setRomeCode(r.romeCode);
+                                setOgrCode("");
+                              } else {
+                                setOgrCode(r.romeCode);
+                                setRomeCode("");
+                              }
                               window.scrollTo({ top: 0, behavior: "smooth" });
                             }}
                             className="text-left font-medium text-foreground underline-offset-2 hover:underline"
