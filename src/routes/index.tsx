@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Library } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
-import { displayRomeCodePair, isRomeCodeFormat, lookupRomeLabel, normalizeRomeCode, ROME_CODES } from "@/lib/rome-codes";
+import { displayRomeCodePair, isRomeCodeFormat, lookupRomeLabel, normalizeRomeCode, OGR_CODES, ogrCodesForRome, ROME_CODES } from "@/lib/rome-codes";
 import { searchRomeVideos, summarizeVideo, type VideoResult } from "@/lib/youtube.functions";
 
 const SEARCH_TEMPLATES = [
@@ -169,11 +169,14 @@ function Index() {
     }
   }
 
-  // Libellé du métier : depuis le code ROME ou, à défaut, depuis le code OGR.
+  // Libellé du métier : le code OGR choisi est plus précis, il est prioritaire
+  // sur le code ROME ; à défaut, le libellé vient du code ROME.
   const label = useMemo(
-    () => lookupRomeLabel(romeCode) ?? (ogrCode ? lookupRomeLabel(ogrCode) ?? "" : ""),
+    () => (ogrCode ? lookupRomeLabel(ogrCode) ?? lookupRomeLabel(romeCode) ?? "" : lookupRomeLabel(romeCode) ?? ""),
     [romeCode, ogrCode],
   );
+  // Codes OGR rattachés au code ROME saisi.
+  const ogrOptions = useMemo(() => ogrCodesForRome(romeCode), [romeCode]);
   const [template, setTemplate] = useState<string>(SEARCH_TEMPLATES[0]);
   // Libellé utilisé pour la recherche YouTube : le métier saisi librement est prioritaire
   // sur le libellé généré à partir du code ROME.
@@ -406,7 +409,13 @@ function Index() {
               <input
                 id="rome"
                 value={romeCode}
-                onChange={(e) => setRomeCode(e.target.value.toUpperCase())}
+                onChange={(e) => {
+                  const next = e.target.value.toUpperCase();
+                  setRomeCode(next);
+                  if (next && ogrCode && !ogrCodesForRome(next).includes(ogrCode)) {
+                    setOgrCode("");
+                  }
+                }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") void handleSearch();
                 }}
@@ -440,6 +449,25 @@ function Index() {
                 placeholder="Ex. 38949"
                 className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm font-semibold text-foreground outline-none focus:border-ring focus:ring-2 focus:ring-ring/30"
               />
+              <select
+                id="ogr-list"
+                aria-label="Codes OGR associés au code ROME"
+                value={ogrOptions.includes(ogrCode) ? ogrCode : ""}
+                disabled={ogrOptions.length === 0}
+                onChange={(e) => setOgrCode(e.target.value)}
+                className="h-10 w-full rounded-md border border-input bg-background px-2 text-sm text-foreground outline-none focus:border-ring focus:ring-2 focus:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                <option value="">
+                  {ogrOptions.length === 0
+                    ? "Aucun code OGR : saisissez un code ROME"
+                    : `Codes OGR associés (${ogrOptions.length})`}
+                </option>
+                {ogrOptions.map((ogr) => (
+                  <option key={ogr} value={ogr}>
+                    {`${ogr} – ${OGR_CODES[ogr]?.[0] ?? ""}`}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="space-y-1.5">
               <label
