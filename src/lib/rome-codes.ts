@@ -17,9 +17,18 @@ export function lookupRomeLabel(input: string): string | null {
   return ROME_CODES[code] ?? null;
 }
 
+/** Code ROME : une lettre + 4 chiffres (ex. M1805). */
+export function isRomeCodeFormat(input: string): boolean {
+  return /^[A-Z]\d{4}$/.test(normalizeRomeCode(input));
+}
+
 /** Renvoie « M1805 – OGR 38949 » si un code OGR est saisi, sinon le code ROME. */
-export function displayRomeCode(input: string): string {
-  const code = normalizeRomeCode(input);
-  const ogr = OGR_CODES[code];
-  return ogr ? `${ogr[1]} – OGR ${code}` : code;
+export function displayRomeCodePair(romeCode: string, ogrCode: string): string {
+  const rome = normalizeRomeCode(romeCode);
+  const ogr = normalizeRomeCode(ogrCode);
+  if (ogr) {
+    const found = OGR_CODES[ogr];
+    return found ? `${found[1]} – OGR ${ogr}` : `OGR ${ogr}`;
+  }
+  return rome;
 }
