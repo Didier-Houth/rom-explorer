@@ -405,12 +405,12 @@ function Index() {
               </label>
               <input
                 id="rome"
-                value={code}
-                onChange={(e) => setCode(e.target.value.toUpperCase())}
+                value={romeCode}
+                onChange={(e) => setRomeCode(e.target.value.toUpperCase())}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") void handleSearch();
                 }}
-                placeholder="Ex. M1805 ou code OGR 38949"
+                placeholder="Ex. M1805"
                 list="rome-list"
                 className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm font-semibold text-foreground outline-none focus:border-ring focus:ring-2 focus:ring-ring/30"
               />
@@ -421,6 +421,25 @@ function Index() {
                   </option>
                 ))}
               </datalist>
+            </div>
+            <div className="space-y-1.5">
+              <label
+                htmlFor="ogr"
+                className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+              >
+                Code OGR
+              </label>
+              <input
+                id="ogr"
+                value={ogrCode}
+                onChange={(e) => setOgrCode(e.target.value.replace(/\D/g, ""))}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") void handleSearch();
+                }}
+                inputMode="numeric"
+                placeholder="Ex. 38949"
+                className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm font-semibold text-foreground outline-none focus:border-ring focus:ring-2 focus:ring-ring/30"
+              />
             </div>
             <div className="space-y-1.5">
               <label
