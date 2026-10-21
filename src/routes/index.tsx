@@ -210,7 +210,7 @@ function Index() {
     setSaved(false);
     if (!searchLabel) {
       setError(
-        "Saisissez un code ROME reconnu (exemple : M1805) ou un nom de métier libre.",
+        "Saisissez un code ROME reconnu (exemple : M1805), un code OGR (exemple : 38949) ou un nom de métier libre.",
       );
       return;
     }
@@ -218,7 +218,7 @@ function Index() {
     try {
       const items = await search({
         data: {
-          romeCode: displayRomeCode(code) || "LIBRE",
+          romeCode: displayRomeCodePair(romeCode, ogrCode) || "LIBRE",
           romeLabel: searchLabel,
           query: template.replace("[métier]", searchLabel),
         },
@@ -266,7 +266,7 @@ function Index() {
     if (!selected) return;
     setError(null);
     const { error: dbError } = await supabase.from("videos_metiers").insert({
-      rome_code: displayRomeCode(code),
+      rome_code: displayRomeCodePair(romeCode, ogrCode),
       rome_label: searchLabel,
       video_id: selected.videoId,
       title: selected.title,
@@ -574,7 +574,7 @@ function Index() {
                         type="checkbox"
                         checked={checked}
                         disabled={collectionSaving}
-                        onChange={() => toggleCollection(v, normalizeRomeCode(code) || "LIBRE", searchLabel)}
+                        onChange={() => toggleCollection(v, displayRomeCodePair(romeCode, ogrCode) || "LIBRE", searchLabel)}
                         className="h-4 w-4 accent-[hsl(var(--primary))]"
                       />
                       Ajouter à ma collection
@@ -785,7 +785,13 @@ function Index() {
                             onClick={() => {
                               setSelected(r.video);
                               setSummary(r.summary);
-                              setCode(r.romeCode);
+                              if (isRomeCodeFormat(r.romeCode)) {
+                                setRomeCode(r.romeCode);
+                                setOgrCode("");
+                              } else {
+                                setOgrCode(r.romeCode);
+                                setRomeCode("");
+                              }
                               window.scrollTo({ top: 0, behavior: "smooth" });
                             }}
                             className="text-left font-medium text-foreground underline-offset-2 hover:underline"
