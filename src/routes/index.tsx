@@ -169,7 +169,11 @@ function Index() {
     }
   }
 
-  const label = useMemo(() => lookupRomeLabel(code) ?? "", [code]);
+  // Libellé du métier : depuis le code ROME ou, à défaut, depuis le code OGR.
+  const label = useMemo(
+    () => lookupRomeLabel(romeCode) ?? (ogrCode ? lookupRomeLabel(ogrCode) ?? "" : ""),
+    [romeCode, ogrCode],
+  );
   const [template, setTemplate] = useState<string>(SEARCH_TEMPLATES[0]);
   // Libellé utilisé pour la recherche YouTube : le métier saisi librement est prioritaire
   // sur le libellé généré à partir du code ROME.
@@ -179,7 +183,8 @@ function Index() {
   );
 
   function handleResetForm() {
-    setCode("");
+    setRomeCode("");
+    setOgrCode("");
     setMetierLibre("");
     setTemplate(SEARCH_TEMPLATES[0]);
     setResults(null);
