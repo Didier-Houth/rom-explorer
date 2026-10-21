@@ -395,7 +395,7 @@ function Index() {
 
 
         <section className="mt-10 rounded-xl border border-border bg-card p-6 shadow-sm">
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-3">
             <div className="space-y-1.5">
               <label
                 htmlFor="rome"
@@ -456,7 +456,7 @@ function Index() {
                 className="h-11 w-full rounded-md border border-border bg-secondary px-3 text-sm text-foreground outline-none"
               />
             </div>
-            <div className="space-y-1.5 sm:col-span-2">
+            <div className="space-y-1.5 sm:col-span-3">
               <label
                 htmlFor="metier-libre"
                 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
@@ -478,7 +478,7 @@ function Index() {
                 ROME. Laissez-le vide pour utiliser le libellé généré.
               </p>
             </div>
-            <div className="space-y-1.5 sm:col-span-2">
+            <div className="space-y-1.5 sm:col-span-3">
               <label
                 htmlFor="search-template"
                 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
