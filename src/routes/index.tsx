@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Library } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
-import { lookupRomeLabel, normalizeRomeCode, ROME_CODES } from "@/lib/rome-codes";
+import { displayRomeCode, lookupRomeLabel, normalizeRomeCode, ROME_CODES } from "@/lib/rome-codes";
 import { searchRomeVideos, summarizeVideo, type VideoResult } from "@/lib/youtube.functions";
 
 const SEARCH_TEMPLATES = [
@@ -212,7 +212,7 @@ function Index() {
     try {
       const items = await search({
         data: {
-          romeCode: normalizeRomeCode(code) || "LIBRE",
+          romeCode: displayRomeCode(code) || "LIBRE",
           romeLabel: searchLabel,
           query: template.replace("[métier]", searchLabel),
         },
@@ -260,7 +260,7 @@ function Index() {
     if (!selected) return;
     setError(null);
     const { error: dbError } = await supabase.from("videos_metiers").insert({
-      rome_code: normalizeRomeCode(code),
+      rome_code: displayRomeCode(code),
       rome_label: searchLabel,
       video_id: selected.videoId,
       title: selected.title,
@@ -404,7 +404,7 @@ function Index() {
                 onKeyDown={(e) => {
                   if (e.key === "Enter") void handleSearch();
                 }}
-                placeholder="Ex. M1805"
+                placeholder="Ex. M1805 ou code OGR 38949"
                 list="rome-list"
                 className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm font-semibold text-foreground outline-none focus:border-ring focus:ring-2 focus:ring-ring/30"
               />
