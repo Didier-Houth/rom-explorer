@@ -19,7 +19,7 @@ function CopyField({ label, value }: { label: string; value: string }) {
   </div>;
 }
 
-export function CollectionVideos({ videos, collectionId }: { videos: SavedVideo[]; collectionId?: string }) {
+export function CollectionVideos({ videos, collectionId }: { videos: SavedVideo[]; collectionId?: string | undefined }) {
   const { data: reviews } = useSuspenseQuery(videoReviewsOptions);
   const queryClient = useQueryClient();
   const [selected, setSelected] = useState<SavedVideo | null>(null);
