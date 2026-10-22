@@ -17,6 +17,8 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { Save } from "lucide-react";
 import { collectionPayload, type CollectionItem } from "@/lib/collections";
+import { CollectionIdentification } from "@/components/CollectionIdentification";
+import type { Contributor } from "@/lib/contributors";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -120,6 +122,7 @@ function Index() {
   const [collectionCode, setCollectionCode] = useState("");
   const [collectionMetier, setCollectionMetier] = useState("");
   const [collectionSaving, setCollectionSaving] = useState(false);
+  const [identificationOpen, setIdentificationOpen] = useState(false);
   const [collectionMessage, setCollectionMessage] = useState<string | null>(null);
   const [collectionError, setCollectionError] = useState<string | null>(null);
   const [videoTexts, setVideoTexts] = useState<Record<string, { transcript: string | null; summary: string }>>({});
@@ -139,7 +142,7 @@ function Index() {
     );
   }
 
-  async function handleSaveCollection() {
+  async function handleSaveCollection(contributor: Contributor) {
     if (collectionSaving) return;
     setCollectionError(null);
     setCollectionMessage(null);
@@ -158,9 +161,9 @@ function Index() {
         complete.push({ ...item, ...text });
       }
       setCollection(complete);
-      const { error: dbError } = await supabase.from("collections_videos").insert(collectionPayload(collectionName, complete, meta));
+      const { error: dbError } = await supabase.from("collections_videos").insert({ ...collectionPayload(collectionName, complete, meta), contributor_id: contributor.id, contributor_identifier: contributor.identifier });
       if (dbError) throw new Error("La collection n'a pas pu être enregistrée. Réessayez.");
-      setCollectionMessage(`Collection « ${collectionName.trim()} » enregistrée (${complete.length} vidéos).`);
+      setCollectionMessage(`Collection « ${contributor.identifier} — ${collectionName.trim()} » enregistrée (${complete.length} vidéos).`);
     } catch (e) {
       setCollectionMessage(null);
       setCollectionError(e instanceof Error ? e.message : "Enregistrement impossible. Réessayez.");
@@ -718,7 +721,10 @@ function Index() {
                   className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground outline-none focus:border-ring" />
               </div>
               <Button size="lg" className="h-11" disabled={collectionSaving || summarizing || collection.length === 0}
-                onClick={() => void handleSaveCollection()}>
+                onClick={() => {
+                  try { collectionPayload(collectionName, collection, { romeCode: collectionCode, romeLabel: collectionMetier }); setIdentificationOpen(true); }
+                  catch (e) { setCollectionError(e instanceof Error ? e.message : "Vérifiez votre collection."); }
+                }}>
                 <Save aria-hidden="true" />{collectionSaving ? "Enregistrement en cours…" : "Enregistrer la collection"}
               </Button>
             </div>
@@ -921,6 +927,7 @@ function Index() {
         </section>
       </main>
 
+      <CollectionIdentification open={identificationOpen} onOpenChange={setIdentificationOpen} onIdentified={contributor => { setIdentificationOpen(false); void handleSaveCollection(contributor); }} />
       <footer className="mt-16 border-t border-border py-8 text-center text-xs text-muted-foreground">
         Outil interne France Travail · Recherche de vidéos métiers par code ROME
       </footer>
