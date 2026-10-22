@@ -54,7 +54,7 @@ function CollectionsPage() {
         </Link>)}
       </div>
       {identifiers.map(identifier => <section key={identifier} className="mt-10 border-t border-border pt-6">
-        <h2 className="break-words font-display text-xl font-bold">{identifier}</h2>
+        <h2 className="break-words font-display text-xl font-bold"><Link to="/contributeurs/$identifier" params={{ identifier }} className="underline hover:text-primary">{identifier}</Link></h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <Link to="/collections/$id" params={{ id: contributorGroupId(identifier) }} className="rounded-lg border-2 border-success bg-success/10 p-5 text-success">
             <CheckCircle2 className="mb-3 size-6" /><p className="break-words font-bold">{identifier} — Vidéos validées</p><p className="mt-2 text-sm">{validatedVideos(rows.filter(row => row.contributor_identifier === identifier), reviews).length} vidéo(s)</p>

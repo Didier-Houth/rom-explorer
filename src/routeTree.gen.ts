@@ -14,6 +14,7 @@ import { Route as HistoriqueRouteImport } from './routes/historique'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as CollectionsIndexRouteImport } from './routes/collections.index'
 import { Route as CollectionsIdRouteImport } from './routes/collections.$id'
+import { Route as ContributeursIdentifierRouteImport } from './routes/contributeurs.$identifier'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -40,12 +41,18 @@ const CollectionsIdRoute = CollectionsIdRouteImport.update({
   path: '/collections/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ContributeursIdentifierRoute = ContributeursIdentifierRouteImport.update({
+  id: '/contributeurs/$identifier',
+  path: '/contributeurs/$identifier',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/historique': typeof HistoriqueRoute
   '/reset-password': typeof ResetPasswordRoute
   '/collections/$id': typeof CollectionsIdRoute
+  '/contributeurs/$identifier': typeof ContributeursIdentifierRoute
   '/collections/': typeof CollectionsIndexRoute
 }
 export interface FileRoutesByTo {
@@ -53,6 +60,7 @@ export interface FileRoutesByTo {
   '/historique': typeof HistoriqueRoute
   '/reset-password': typeof ResetPasswordRoute
   '/collections/$id': typeof CollectionsIdRoute
+  '/contributeurs/$identifier': typeof ContributeursIdentifierRoute
   '/collections': typeof CollectionsIndexRoute
 }
 export interface FileRoutesById {
@@ -61,6 +69,7 @@ export interface FileRoutesById {
   '/historique': typeof HistoriqueRoute
   '/reset-password': typeof ResetPasswordRoute
   '/collections/$id': typeof CollectionsIdRoute
+  '/contributeurs/$identifier': typeof ContributeursIdentifierRoute
   '/collections/': typeof CollectionsIndexRoute
 }
 export interface FileRouteTypes {
@@ -70,6 +79,7 @@ export interface FileRouteTypes {
     | '/historique'
     | '/reset-password'
     | '/collections/$id'
+    | '/contributeurs/$identifier'
     | '/collections/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -77,6 +87,7 @@ export interface FileRouteTypes {
     | '/historique'
     | '/reset-password'
     | '/collections/$id'
+    | '/contributeurs/$identifier'
     | '/collections'
   id:
     | '__root__'
@@ -84,6 +95,7 @@ export interface FileRouteTypes {
     | '/historique'
     | '/reset-password'
     | '/collections/$id'
+    | '/contributeurs/$identifier'
     | '/collections/'
   fileRoutesById: FileRoutesById
 }
@@ -92,6 +104,7 @@ export interface RootRouteChildren {
   HistoriqueRoute: typeof HistoriqueRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   CollectionsIdRoute: typeof CollectionsIdRoute
+  ContributeursIdentifierRoute: typeof ContributeursIdentifierRoute
   CollectionsIndexRoute: typeof CollectionsIndexRoute
 }
 
@@ -132,6 +145,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CollectionsIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/contributeurs/$identifier': {
+      id: '/contributeurs/$identifier'
+      path: '/contributeurs/$identifier'
+      fullPath: '/contributeurs/$identifier'
+      preLoaderRoute: typeof ContributeursIdentifierRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -140,6 +160,7 @@ const rootRouteChildren: RootRouteChildren = {
   HistoriqueRoute: HistoriqueRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   CollectionsIdRoute: CollectionsIdRoute,
+  ContributeursIdentifierRoute: ContributeursIdentifierRoute,
   CollectionsIndexRoute: CollectionsIndexRoute,
 }
 export const routeTree = rootRouteImport
