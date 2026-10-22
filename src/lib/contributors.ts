@@ -18,5 +18,6 @@ export function contributorGroupId(identifier: string, archived = false) {
 
 export function parseContributorGroup(id: string) {
   const match = /^(validees|archivees)--([A-Z]{6}\d{6})$/.exec(id);
-  return match ? { identifier: match[2], archived: match[1] === "archivees" } : null;
+  const identifier = match?.[2];
+  return match && identifier ? { identifier, archived: match[1] === "archivees" } : null;
 }
