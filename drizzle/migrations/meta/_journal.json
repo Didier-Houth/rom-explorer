@@ -29,6 +29,13 @@
       "when": 1792664488653,
       "tag": "0003_collection_video_reviews",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792665169021,
+      "tag": "0004_archive_validated_collections",
+      "breakpoints": true
     }
   ]
 }

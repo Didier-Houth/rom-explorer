@@ -1,14 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { CheckCircle2 } from "lucide-react";
+import { Archive, CheckCircle2 } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
-import { savedCollectionsOptions, videoReviewsOptions } from "@/lib/saved-collections";
-import { validatedVideos } from "@/lib/video-reviews";
+import { savedCollectionsOptions, videoReviewsOptions, videoArchivesOptions } from "@/lib/saved-collections";
+import { validatedVideos, archivedVideos } from "@/lib/video-reviews";
 
 export const Route = createFileRoute("/collections/")({
   loader: async ({ context }) => {
-    await Promise.all([context.queryClient.ensureQueryData(savedCollectionsOptions), context.queryClient.ensureQueryData(videoReviewsOptions)]);
+    await Promise.all([context.queryClient.ensureQueryData(savedCollectionsOptions), context.queryClient.ensureQueryData(videoReviewsOptions), context.queryClient.ensureQueryData(videoArchivesOptions)]);
   },
   head: () => ({ meta: [
     { title: "Collections de vidéos métiers — France Travail" },
@@ -23,6 +23,7 @@ export const Route = createFileRoute("/collections/")({
 function CollectionsPage() {
   const { data: rows } = useSuspenseQuery(savedCollectionsOptions);
   const { data: reviews } = useSuspenseQuery(videoReviewsOptions);
+  const { data: archives } = useSuspenseQuery(videoArchivesOptions);
   const count = validatedVideos(rows, reviews).length;
   return <div className="min-h-screen bg-background">
     <SiteHeader />
@@ -38,6 +39,11 @@ function CollectionsPage() {
           <p className="font-display text-lg font-bold text-success">Vidéos validées</p>
           <p className="mt-1 text-sm text-muted-foreground">Collection générale</p>
           <p className="mt-3 text-sm font-semibold text-success">{count} vidéo{count > 1 ? "s" : ""}</p>
+        </Link>
+        <Link to="/collections/$id" params={{ id: "validees-archivees" }} className="rounded-lg border border-border bg-card p-5 shadow-sm transition-colors hover:border-primary">
+          <Archive className="mb-3 size-7 text-primary" />
+          <p className="font-display text-lg font-bold">Vidéos validées archivées</p>
+          <p className="mt-3 text-sm font-semibold text-primary">{archivedVideos(archives).length} vidéo(s)</p>
         </Link>
         {rows.map(c => <Link key={c.id} to="/collections/$id" params={{ id: c.id }} className="rounded-lg border border-border bg-card p-5 shadow-sm transition-colors hover:border-primary">
           <p className="break-words font-display text-lg font-bold">{c.name}</p>

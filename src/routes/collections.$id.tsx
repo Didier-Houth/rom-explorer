@@ -1,19 +1,23 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useSuspenseQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { Archive, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { AlertDialog, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel } from "@/components/ui/alert-dialog";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { CollectionVideos } from "@/components/CollectionVideos";
-import { savedCollectionsOptions, videoReviewsOptions } from "@/lib/saved-collections";
-import { validatedVideos } from "@/lib/video-reviews";
+import { savedCollectionsOptions, videoReviewsOptions, videoArchivesOptions } from "@/lib/saved-collections";
+import { validatedVideos, archivedVideos, archiveAfterConfirmation } from "@/lib/video-reviews";
 
 export const Route = createFileRoute("/collections/$id")({
   loader: async ({ context }) => {
-    await Promise.all([context.queryClient.ensureQueryData(savedCollectionsOptions), context.queryClient.ensureQueryData(videoReviewsOptions)]);
+    await Promise.all([context.queryClient.ensureQueryData(savedCollectionsOptions), context.queryClient.ensureQueryData(videoReviewsOptions), context.queryClient.ensureQueryData(videoArchivesOptions)]);
   },
   head: ({ params }) => ({ meta: [
-    { title: params.id === "validees" ? "Vidéos validées — France Travail" : "Collection de vidéos métiers — France Travail" },
+    { title: params.id === "validees-archivees" ? "Vidéos validées archivées — France Travail" : params.id === "validees" ? "Vidéos validées — France Travail" : "Collection de vidéos métiers — France Travail" },
     { name: "description", content: "Vidéos métiers, codes ROME et OGR, validation et lecture des collections France Travail." },
-    { property: "og:title", content: params.id === "validees" ? "Vidéos validées — France Travail" : "Collection de vidéos métiers — France Travail" },
+    { property: "og:title", content: params.id === "validees-archivees" ? "Vidéos validées archivées — France Travail" : params.id === "validees" ? "Vidéos validées — France Travail" : "Collection de vidéos métiers — France Travail" },
     { property: "og:description", content: "Consultez les vidéos et leurs métiers, puis retrouvez toutes les vidéos validées." },
     { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" },
   ] }),
@@ -24,9 +28,32 @@ function CollectionPage() {
   const { id } = Route.useParams();
   const { data: collections } = useSuspenseQuery(savedCollectionsOptions);
   const { data: reviews } = useSuspenseQuery(videoReviewsOptions);
+  const { data: archives } = useSuspenseQuery(videoArchivesOptions);
+  const queryClient = useQueryClient();
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [clearing, setClearing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const general = id === "validees";
+  const archived = id === "validees-archivees";
   const collection = collections.find(c => c.id === id);
-  const videos = general ? validatedVideos(collections, reviews) : collection?.videos ?? [];
+  const videos = archived ? archivedVideos(archives) : general ? validatedVideos(collections, reviews) : collection?.videos ?? [];
+
+  async function clearCollection() {
+    if (clearing) return;
+    setClearing(true); setError(null);
+    try {
+      await archiveAfterConfirmation(true, async () => {
+        const { error } = await supabase.rpc("archive_validated_videos");
+        if (error) throw new Error(error.message);
+      });
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: videoReviewsOptions.queryKey }),
+        queryClient.invalidateQueries({ queryKey: videoArchivesOptions.queryKey }),
+      ]);
+      setConfirmOpen(false);
+    } catch { setError("La collection n’a pas pu être vidée. Réessayez."); }
+    finally { setClearing(false); }
+  }
   return <div className="min-h-screen bg-background">
     <SiteHeader />
     <main className="mx-auto max-w-6xl px-6 py-12">
@@ -35,11 +62,28 @@ function CollectionPage() {
         <Button asChild variant="link"><Link to="/collections">← Toutes les collections</Link></Button>
         {!general && <Button asChild variant="outline"><Link to="/collections/$id" params={{ id: "validees" }}>Vidéos validées</Link></Button>}
       </div>
-      {!general && !collection ? <p className="mt-6 text-destructive">Collection introuvable.</p> : <>
-        <h1 className="mt-6 break-words font-display text-4xl font-extrabold">{general ? "Vidéos validées" : collection?.name}</h1>
-        {!general && collection?.rome_code !== "LIBRE" && <p className="mt-2 text-muted-foreground">{collection?.rome_code} · {collection?.rome_label}</p>}
-        <CollectionVideos key={id} videos={videos} collectionId={general ? undefined : id} />
+      {!general && !archived && !collection ? <p className="mt-6 text-destructive">Collection introuvable.</p> : <>
+        <h1 className="mt-6 break-words font-display text-4xl font-extrabold">{archived ? "Vidéos validées archivées" : general ? "Vidéos validées" : collection?.name}</h1>
+        {general && <div className="mt-5 flex flex-wrap gap-3">
+          <Button variant="destructive" disabled={videos.length === 0 || clearing} onClick={() => { setError(null); setConfirmOpen(true); }}><Archive className="size-4" />Vider la collection</Button>
+          <Button asChild variant="outline"><Link to="/collections/$id" params={{ id: "validees-archivees" }}>Vidéos validées archivées</Link></Button>
+        </div>}
+        {!general && !archived && collection?.rome_code !== "LIBRE" && <p className="mt-2 text-muted-foreground">{collection?.rome_code} · {collection?.rome_label}</p>}
+        <CollectionVideos key={`${id}:${videos.length}`} videos={videos} collectionId={general || archived ? undefined : id} emptyMessage={archived ? "Aucune vidéo archivée pour l’instant." : undefined} />
       </>}
+      {general && <AlertDialog open={confirmOpen} onOpenChange={open => { if (!clearing) setConfirmOpen(open); }}>
+        <AlertDialogContent className="w-[calc(100%-2rem)]">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Vider la collection « Vidéos validées » ?</AlertDialogTitle>
+            <AlertDialogDescription>Toutes les vidéos de cette collection seront déplacées dans « Vidéos validées archivées », avec leurs codes ROME, OGR, métier et informations associées. Les collections d’origine seront conservées.</AlertDialogDescription>
+          </AlertDialogHeader>
+          {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={clearing}>Annuler</AlertDialogCancel>
+            <Button variant="destructive" disabled={clearing} onClick={() => void clearCollection()}>{clearing && <Loader2 className="size-4 animate-spin" />}{clearing ? "Archivage en cours…" : "Confirmer le vidage"}</Button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>}
     </main>
   </div>;
 }

@@ -37,3 +37,23 @@ export function validatedVideos(collections: SavedCollection[], reviews: Review[
   }
   return [...unique.values()];
 }
+
+export type VideoArchive = { id: string; videos: SavedVideo[]; created_at: string };
+
+export function archivedVideos(archives: VideoArchive[]): SavedVideo[] {
+  const unique = new Map<string, SavedVideo>();
+  for (const archive of archives) {
+    for (const video of archive.videos) {
+      const ref = videoReferences(video);
+      const key = `${video.video_id}:${ref.rome}:${ref.ogr}:${ref.metier}`;
+      if (!unique.has(key)) unique.set(key, video);
+    }
+  }
+  return [...unique.values()];
+}
+
+export async function archiveAfterConfirmation(confirmed: boolean, archive: () => Promise<unknown>): Promise<boolean> {
+  if (!confirmed) return false;
+  await archive();
+  return true;
+}

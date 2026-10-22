@@ -67,6 +67,24 @@ export type Database = {
         }
         Relationships: []
       }
+      validated_video_archives: {
+        Row: {
+          created_at: string
+          id: string
+          videos: Json
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          videos: Json
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          videos?: Json
+        }
+        Relationships: []
+      }
       videos_metiers: {
         Row: {
           channel_title: string | null
@@ -120,7 +138,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      archive_validated_videos: { Args: never; Returns: number }
     }
     Enums: {
       [_ in never]: never
