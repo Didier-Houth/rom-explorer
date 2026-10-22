@@ -1,5 +1,5 @@
 # Tasks
-- [ ] Allow password visibility and reuse the email after signup without removing account protection.
+- [x] Allow password visibility and reuse the email after signup without removing account protection.
 - [x] Add protected identification, persisted contributor identifiers and prefix selection before collection saving.
 - [x] Group saved, validated and archived videos by contributor identifier; verify grouping rules with tests.
 - [ ] Register Didier Houth and verify signed-in collection saving, identifier readback and contributor grouping end-to-end — blocked: user must first sign up in the application and confirm their email; no registered account is available.
