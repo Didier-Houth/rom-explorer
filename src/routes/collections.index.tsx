@@ -40,10 +40,10 @@ function CollectionsPage() {
           <p className="mt-1 text-sm text-muted-foreground">Collection générale</p>
           <p className="mt-3 text-sm font-semibold text-success">{count} vidéo{count > 1 ? "s" : ""}</p>
         </Link>
-        <Link to="/collections/$id" params={{ id: "validees-archivees" }} className="rounded-lg border border-border bg-card p-5 shadow-sm transition-colors hover:border-primary">
-          <Archive className="mb-3 size-7 text-primary" />
-          <p className="font-display text-lg font-bold">Vidéos validées archivées</p>
-          <p className="mt-3 text-sm font-semibold text-primary">{archivedVideos(archives).length} vidéo(s)</p>
+        <Link to="/collections/$id" params={{ id: "validees-archivees" }} className="rounded-lg border-2 border-archive bg-archive/10 p-5 transition-colors hover:bg-archive/20">
+          <Archive className="mb-3 size-7 text-archive" />
+          <p className="font-display text-lg font-bold text-archive">Vidéos validées archivées</p>
+          <p className="mt-3 text-sm font-semibold text-archive">{archivedVideos(archives).length} vidéo(s)</p>
         </Link>
         {rows.map(c => <Link key={c.id} to="/collections/$id" params={{ id: c.id }} className="rounded-lg border border-border bg-card p-5 shadow-sm transition-colors hover:border-primary">
           <p className="break-words font-display text-lg font-bold">{c.name}</p>
