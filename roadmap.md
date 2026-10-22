@@ -1,6 +1,7 @@
 # Tasks
-- [ ] Add protected identification, persisted contributor identifiers and prefix selection before collection saving.
-- [ ] Group saved, validated and archived videos by contributor identifier; verify ownership and persistence.
+- [x] Add protected identification, persisted contributor identifiers and prefix selection before collection saving.
+- [x] Group saved, validated and archived videos by contributor identifier; verify grouping rules with tests.
+- [ ] Verify signed-in collection saving and persistence end-to-end — blocked: no registered account; test placeholder email rejected as expected.
 - [x] Add confirmed clearing of validated videos with atomic, complete archiving.
 - [x] Show the archived validated-video collection and verify cancellation, clearing and persistence.
 - [x] Persist mutually exclusive video review decisions within saved collections.
