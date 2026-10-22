@@ -22,6 +22,13 @@
       "when": 1792500089517,
       "tag": "0002_tighten_public_insert_policies",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792664488653,
+      "tag": "0003_collection_video_reviews",
+      "breakpoints": true
     }
   ]
 }
