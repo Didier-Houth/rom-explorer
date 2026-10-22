@@ -1,4 +1,5 @@
 # Tasks
+- [ ] Apply and test the new password rules on signup and password reset.
 - [x] Allow password visibility and reuse the email after signup without removing account protection.
 - [x] Add protected identification, persisted contributor identifiers and prefix selection before collection saving.
 - [x] Group saved, validated and archived videos by contributor identifier; verify grouping rules with tests.

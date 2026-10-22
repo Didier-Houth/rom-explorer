@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { readRememberedEmail, rememberEmail } from "@/lib/remembered-email";
+import { isValidNewPassword, PASSWORD_REQUIREMENTS } from "@/lib/password-policy";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { Button } from "@/components/ui/button";
@@ -49,6 +50,7 @@ export function CollectionIdentification({ open, onOpenChange, onIdentified }: {
     try {
       if (!user) {
         if (signup) {
+          if (!isValidNewPassword(password)) throw new Error(PASSWORD_REQUIREMENTS);
           if (contributorLetters(firstName).length < 2 || contributorLetters(lastName).length < 4) throw new Error("Saisissez au moins deux lettres pour le prénom et quatre pour le nom.");
           const result = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin, data: { first_name: firstName, last_name: lastName } } });
           if (result.error) throw result.error;
@@ -93,6 +95,7 @@ export function CollectionIdentification({ open, onOpenChange, onIdentified }: {
       {signup || !savedEmail || editingEmail ? <label className="block space-y-1 text-sm font-medium">Adresse e-mail<input type="email" autoComplete="email" required className={inputClass} value={email} onChange={e => setEmail(e.target.value)} /></label> : <div className="flex min-w-0 items-center justify-between gap-2"><p className="min-w-0 break-all text-sm text-muted-foreground">{savedEmail}</p><Button type="button" variant="link" onClick={() => setEditingEmail(true)}>Modifier l’e-mail</Button></div>}
       <div className="space-y-1"><label htmlFor="contributor-password" className="text-sm font-medium">Mot de passe</label><div className="relative"><input id="contributor-password" type={showPassword ? "text" : "password"} autoComplete={signup ? "new-password" : "current-password"} required minLength={8} className={`${inputClass} pr-12`} value={password} onChange={e => setPassword(e.target.value)} /><Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1 h-9 w-9" aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"} title={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"} aria-pressed={showPassword} onClick={() => setShowPassword(value => !value)}>{showPassword ? <EyeOff aria-hidden="true" /> : <Eye aria-hidden="true" />}</Button></div></div>
       <Button type="submit" className="w-full" disabled={busy}>{busy ? "Identification en cours…" : signup ? "Créer mon compte" : "Se connecter et enregistrer"}</Button>
+      {signup && <p className="text-sm text-muted-foreground">{PASSWORD_REQUIREMENTS}</p>}
       <div className="flex flex-wrap gap-2">{(["google", "lovable"] as const).map(provider => <Button key={provider} type="button" variant="outline" onClick={async () => { const result = await lovable.auth.signInWithOAuth(provider, { redirect_uri: window.location.origin }); if (result.error) setError("La connexion n’a pas abouti."); }}>Connexion {provider === "google" ? "Google" : "Lovable"}</Button>)}</div>
     </form>}
     {user && <Button disabled={busy} onClick={() => void submit()}>{busy ? "Identification en cours…" : "Confirmer mon identifiant et enregistrer"}</Button>}

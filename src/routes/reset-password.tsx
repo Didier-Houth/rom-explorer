@@ -4,6 +4,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/SiteHeader";
+import { isValidNewPassword, PASSWORD_REQUIREMENTS } from "@/lib/password-policy";
 
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
@@ -34,6 +35,7 @@ function ResetPassword() {
   }, []);
 
   async function submit() {
+    if (!isValidNewPassword(password)) { setError(PASSWORD_REQUIREMENTS); return; }
     setBusy(true); setError("");
     const result = await supabase.auth.updateUser({ password });
     setBusy(false);
@@ -55,6 +57,7 @@ function ResetPassword() {
               <Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1 h-9 w-9" aria-label={show ? "Masquer le mot de passe" : "Afficher le mot de passe"} onClick={() => setShow(v => !v)}>{show ? <EyeOff /> : <Eye />}</Button>
             </div>
             <Button type="submit" className="w-full" disabled={busy}>{busy ? "Enregistrement…" : "Enregistrer le nouveau mot de passe"}</Button>
+            <p className="text-sm text-muted-foreground">{PASSWORD_REQUIREMENTS}</p>
             {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
           </form>}
       </main>
