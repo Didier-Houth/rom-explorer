@@ -18,3 +18,4 @@
 - Store contributor names privately in own-readable profiles, generate immutable identifiers with a database sequence, and enforce collection attribution through RLS; selecting a public identifier must never authorize another account to use it.
 - Keep contributor validation groups derived from attributed snapshots and preserve contributor identifiers in atomic archive batches; legacy unassigned data stays unassigned rather than guessing authorship.
 - Use one root authentication provider and identity-transition listener for session-aware controls and cache invalidation; defer auth callback queries to avoid session-lock deadlocks.
+- Remember only the successfully submitted email locally through the shared email helper; never persist passwords, and always retain verified sign-in for collection saving.
