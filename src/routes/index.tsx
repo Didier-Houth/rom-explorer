@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Library } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { displayRomeCodePair, isRomeCodeFormat, lookupRomeLabel, normalizeRomeCode, OGR_CODES, ogrCodesForRome, ROME_CODES } from "@/lib/rome-codes";
 import { searchRomeVideos, summarizeVideo, type VideoResult } from "@/lib/youtube.functions";
 
@@ -126,6 +126,25 @@ function Index() {
   const [collectionMessage, setCollectionMessage] = useState<string | null>(null);
   const [collectionError, setCollectionError] = useState<string | null>(null);
   const [videoTexts, setVideoTexts] = useState<Record<string, { transcript: string | null; summary: string }>>({});
+  const [draftLoaded, setDraftLoaded] = useState(false);
+  useEffect(() => {
+    try {
+      const stored = sessionStorage.getItem("collection-identification-draft");
+      if (stored) {
+        const draft = JSON.parse(stored);
+        if (Array.isArray(draft.collection)) {
+          setCollection(draft.collection); setCollectionName(draft.name ?? "");
+          setCollectionCode(draft.code ?? ""); setCollectionMetier(draft.metier ?? "");
+          setIdentificationOpen(Boolean(draft.identificationOpen));
+        }
+      }
+    } catch { /* An unreadable draft must not block the form. */ }
+    setDraftLoaded(true);
+  }, []);
+  useEffect(() => {
+    if (!draftLoaded) return;
+    try { sessionStorage.setItem("collection-identification-draft", JSON.stringify({ collection, name: collectionName, code: collectionCode, metier: collectionMetier, identificationOpen })); } catch { /* The current collection remains available if storage is full. */ }
+  }, [draftLoaded, collection, collectionName, collectionCode, collectionMetier, identificationOpen]);
 
   function toggleCollection(video: VideoResult, romeCode: string, romeLabel: string) {
     setCollectionMessage(null);
