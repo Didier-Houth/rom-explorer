@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { Eye, EyeOff } from "lucide-react";
+import { readRememberedEmail, rememberEmail } from "@/lib/remembered-email";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { Button } from "@/components/ui/button";
@@ -14,13 +16,21 @@ export function CollectionIdentification({ open, onOpenChange, onIdentified }: {
   const [matches, setMatches] = useState<string[]>([]);
   const [selected, setSelected] = useState("");
   const [email, setEmail] = useState("");
+  const [savedEmail, setSavedEmail] = useState("");
+  const [editingEmail, setEditingEmail] = useState(false);
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [signup, setSignup] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   useEffect(() => {
-    if (!open) return;
+    const remembered = readRememberedEmail(window.localStorage);
+    setSavedEmail(remembered);
+    setEmail(remembered);
+  }, []);
+  useEffect(() => {
+    if (!open) { setShowPassword(false); setPassword(""); return; }
     setError(""); setMessage("");
     if (profile) { setFirstName(profile.first_name); setLastName(profile.last_name); setPrefix(profile.identifier); setSelected(profile.identifier); }
   }, [open, profile]);
@@ -42,10 +52,12 @@ export function CollectionIdentification({ open, onOpenChange, onIdentified }: {
           if (contributorLetters(firstName).length < 2 || contributorLetters(lastName).length < 4) throw new Error("Saisissez au moins deux lettres pour le prénom et quatre pour le nom.");
           const result = await supabase.auth.signUp({ email, password, options: { emailRedirectTo: window.location.origin, data: { first_name: firstName, last_name: lastName } } });
           if (result.error) throw result.error;
+          setSavedEmail(rememberEmail(window.localStorage, email)); setEditingEmail(false);
           if (!result.data.session) { setMessage("Consultez votre e-mail pour confirmer votre inscription, puis connectez-vous. Votre collection reste sur cette page."); setSignup(false); return; }
         } else {
           const result = await supabase.auth.signInWithPassword({ email, password });
           if (result.error) throw new Error("Connexion impossible. Vérifiez votre e-mail, votre mot de passe et la confirmation de votre inscription.");
+          setSavedEmail(rememberEmail(window.localStorage, email)); setEditingEmail(false);
         }
       }
       const verified = await supabase.auth.getUser();
@@ -75,11 +87,11 @@ export function CollectionIdentification({ open, onOpenChange, onIdentified }: {
     <div className="space-y-2">
       {matches.map(identifier => <Button key={identifier} className="w-full justify-start" variant={selected === identifier ? "default" : "outline"} onClick={() => { setSelected(identifier); setSignup(false); if (profile && canSelectContributor(identifier, profile.identifier)) onIdentified(profile); }}>{identifier}</Button>)}
       {prefix.length >= 2 && matches.length === 0 && <p className="text-sm text-muted-foreground">Aucun identifiant trouvé.</p>}
-      {!user && <Button variant="outline" onClick={() => { setSignup(true); setSelected(""); setError(""); }}>S’inscrire</Button>}
+      {!user && <Button variant="outline" onClick={() => { setSignup(true); setSelected(""); setError(""); setShowPassword(false); }}>S’inscrire</Button>}
     </div>
     {!user && <form className="space-y-3" onSubmit={e => { e.preventDefault(); void submit(); }}>
-      <label className="block space-y-1 text-sm font-medium">Adresse e-mail<input type="email" autoComplete="email" required className={inputClass} value={email} onChange={e => setEmail(e.target.value)} /></label>
-      <label className="block space-y-1 text-sm font-medium">Mot de passe<input type="password" autoComplete={signup ? "new-password" : "current-password"} required minLength={8} className={inputClass} value={password} onChange={e => setPassword(e.target.value)} /></label>
+      {signup || !savedEmail || editingEmail ? <label className="block space-y-1 text-sm font-medium">Adresse e-mail<input type="email" autoComplete="email" required className={inputClass} value={email} onChange={e => setEmail(e.target.value)} /></label> : <div className="flex min-w-0 items-center justify-between gap-2"><p className="min-w-0 break-all text-sm text-muted-foreground">{savedEmail}</p><Button type="button" variant="link" onClick={() => setEditingEmail(true)}>Modifier l’e-mail</Button></div>}
+      <div className="space-y-1"><label htmlFor="contributor-password" className="text-sm font-medium">Mot de passe</label><div className="relative"><input id="contributor-password" type={showPassword ? "text" : "password"} autoComplete={signup ? "new-password" : "current-password"} required minLength={8} className={`${inputClass} pr-12`} value={password} onChange={e => setPassword(e.target.value)} /><Button type="button" variant="ghost" size="icon" className="absolute right-1 top-1 h-9 w-9" aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"} title={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"} aria-pressed={showPassword} onClick={() => setShowPassword(value => !value)}>{showPassword ? <EyeOff aria-hidden="true" /> : <Eye aria-hidden="true" />}</Button></div></div>
       <Button type="submit" className="w-full" disabled={busy}>{busy ? "Identification en cours…" : signup ? "Créer mon compte" : "Se connecter et enregistrer"}</Button>
       <div className="flex flex-wrap gap-2">{(["google", "lovable"] as const).map(provider => <Button key={provider} type="button" variant="outline" onClick={async () => { const result = await lovable.auth.signInWithOAuth(provider, { redirect_uri: window.location.origin }); if (result.error) setError("La connexion n’a pas abouti."); }}>Connexion {provider === "google" ? "Google" : "Lovable"}</Button>)}</div>
     </form>}
