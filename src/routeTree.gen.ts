@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as HistoriqueRouteImport } from './routes/historique'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as CollectionsIndexRouteImport } from './routes/collections.index'
 import { Route as CollectionsIdRouteImport } from './routes/collections.$id'
 
@@ -22,6 +23,11 @@ const IndexRoute = IndexRouteImport.update({
 const HistoriqueRoute = HistoriqueRouteImport.update({
   id: '/historique',
   path: '/historique',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CollectionsIndexRoute = CollectionsIndexRouteImport.update({
@@ -38,12 +44,14 @@ const CollectionsIdRoute = CollectionsIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/historique': typeof HistoriqueRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/collections/$id': typeof CollectionsIdRoute
   '/collections/': typeof CollectionsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/historique': typeof HistoriqueRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/collections/$id': typeof CollectionsIdRoute
   '/collections': typeof CollectionsIndexRoute
 }
@@ -51,20 +59,38 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/historique': typeof HistoriqueRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/collections/$id': typeof CollectionsIdRoute
   '/collections/': typeof CollectionsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/historique' | '/collections/$id' | '/collections/'
+  fullPaths:
+    | '/'
+    | '/historique'
+    | '/reset-password'
+    | '/collections/$id'
+    | '/collections/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/historique' | '/collections/$id' | '/collections'
-  id: '__root__' | '/' | '/historique' | '/collections/$id' | '/collections/'
+  to:
+    | '/'
+    | '/historique'
+    | '/reset-password'
+    | '/collections/$id'
+    | '/collections'
+  id:
+    | '__root__'
+    | '/'
+    | '/historique'
+    | '/reset-password'
+    | '/collections/$id'
+    | '/collections/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   HistoriqueRoute: typeof HistoriqueRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   CollectionsIdRoute: typeof CollectionsIdRoute
   CollectionsIndexRoute: typeof CollectionsIndexRoute
 }
@@ -83,6 +109,13 @@ declare module '@tanstack/react-router' {
       path: '/historique'
       fullPath: '/historique'
       preLoaderRoute: typeof HistoriqueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/collections/': {
@@ -105,6 +138,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   HistoriqueRoute: HistoriqueRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   CollectionsIdRoute: CollectionsIdRoute,
   CollectionsIndexRoute: CollectionsIndexRoute,
 }
