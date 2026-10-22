@@ -5,7 +5,7 @@ import type { Review, SavedCollection, VideoArchive } from "./video-reviews";
 export const savedCollectionsOptions = queryOptions({
   queryKey: ["saved-collections"],
   queryFn: async () => {
-    const { data, error } = await supabase.from("collections_videos").select("id,name,rome_code,rome_label,videos,created_at").order("created_at", { ascending: false });
+    const { data, error } = await supabase.from("collections_videos").select("id,name,rome_code,rome_label,videos,created_at,contributor_identifier").order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     return (data ?? []) as unknown as SavedCollection[];
   },
@@ -25,7 +25,7 @@ export const videoReviewsOptions = queryOptions({
 export const videoArchivesOptions = queryOptions({
   queryKey: ["validated-video-archives"],
   queryFn: async () => {
-    const { data, error } = await supabase.from("validated_video_archives").select("id,videos,created_at").order("created_at", { ascending: false });
+    const { data, error } = await supabase.from("validated_video_archives").select("id,videos,created_at,contributor_identifier").order("created_at", { ascending: false });
     if (error) throw new Error(error.message);
     return (data ?? []) as unknown as VideoArchive[];
   },

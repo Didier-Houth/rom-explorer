@@ -36,6 +36,13 @@
       "when": 1792665169021,
       "tag": "0004_archive_validated_collections",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1792668487570,
+      "tag": "0005_protected_collection_contributors",
+      "breakpoints": true
     }
   ]
 }

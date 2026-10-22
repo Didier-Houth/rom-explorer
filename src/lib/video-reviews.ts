@@ -9,6 +9,7 @@ export type SavedVideo = {
 };
 export type SavedCollection = {
   id: string; name: string; rome_code: string; rome_label: string;
+  contributor_identifier?: string | null;
   videos: SavedVideo[]; created_at: string;
 };
 
@@ -38,7 +39,7 @@ export function validatedVideos(collections: SavedCollection[], reviews: Review[
   return [...unique.values()];
 }
 
-export type VideoArchive = { id: string; videos: SavedVideo[]; created_at: string };
+export type VideoArchive = { id: string; videos: SavedVideo[]; created_at: string; contributor_identifier?: string | null };
 
 export function archivedVideos(archives: VideoArchive[]): SavedVideo[] {
   const unique = new Map<string, SavedVideo>();

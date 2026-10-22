@@ -42,6 +42,8 @@ export type Database = {
       }
       collections_videos: {
         Row: {
+          contributor_id: string | null
+          contributor_identifier: string | null
           created_at: string
           id: string
           name: string
@@ -50,6 +52,8 @@ export type Database = {
           videos: Json
         }
         Insert: {
+          contributor_id?: string | null
+          contributor_identifier?: string | null
           created_at?: string
           id?: string
           name: string
@@ -58,6 +62,8 @@ export type Database = {
           videos: Json
         }
         Update: {
+          contributor_id?: string | null
+          contributor_identifier?: string | null
           created_at?: string
           id?: string
           name?: string
@@ -65,20 +71,55 @@ export type Database = {
           rome_label?: string
           videos?: Json
         }
+        Relationships: [
+          {
+            foreignKeyName: "collections_videos_contributor_id_fkey"
+            columns: ["contributor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          first_name: string
+          id: string
+          identifier: string
+          last_name: string
+        }
+        Insert: {
+          created_at?: string
+          first_name: string
+          id: string
+          identifier: string
+          last_name: string
+        }
+        Update: {
+          created_at?: string
+          first_name?: string
+          id?: string
+          identifier?: string
+          last_name?: string
+        }
         Relationships: []
       }
       validated_video_archives: {
         Row: {
+          contributor_identifier: string | null
           created_at: string
           id: string
           videos: Json
         }
         Insert: {
+          contributor_identifier?: string | null
           created_at?: string
           id?: string
           videos: Json
         }
         Update: {
+          contributor_identifier?: string | null
           created_at?: string
           id?: string
           videos?: Json
@@ -138,7 +179,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      archive_contributor_videos: {
+        Args: { target_identifier: string }
+        Returns: number
+      }
       archive_validated_videos: { Args: never; Returns: number }
+      contributor_letters: { Args: { value: string }; Returns: string }
+      find_contributor_identifiers: {
+        Args: { prefix: string }
+        Returns: {
+          identifier: string
+        }[]
+      }
+      register_contributor: {
+        Args: { first_name: string; last_name: string }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never

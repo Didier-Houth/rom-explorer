@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { ContributorAuthProvider } from "@/components/ContributorAuth";
 
 function NotFoundComponent() {
   return (
@@ -134,8 +135,10 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
+      <ContributorAuthProvider>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
       <Outlet />
+      </ContributorAuthProvider>
     </QueryClientProvider>
   );
 }

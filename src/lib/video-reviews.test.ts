@@ -22,9 +22,19 @@ describe("video review decisions", () => {
     assert.equal(validatedVideos([collection, second], reviews).length, 1);
     assert.equal(validatedVideos([collection, { ...second, videos: [{ ...video, rome_code: "M1805" }] }], reviews).length, 2);
   });
+  test("validated contributor groups contain only their own collections", () => {
+    const own = { ...collection, contributor_identifier: "DIHOUT000001" };
+    const other = { ...collection, id: "other", contributor_identifier: "ELDUPO000002", videos: [{ ...video, video_id: "other-video" }] };
+    const reviews = [own, other].map(c => ({ collection_id: c.id, video_id: c.videos[0]?.video_id ?? "", status: "approved" as const }));
+    assert.deepEqual(validatedVideos([own, other].filter(c => c.contributor_identifier === "DIHOUT000001"), reviews), [video]);
+  });
 });
 
 describe("clearing validated videos", () => {
+  test("archived contributor groups retain attribution and exclude other people", () => {
+    const archives = [{ id: "own", videos: [video], created_at: "2026-10-22", contributor_identifier: "DIHOUT000001" }, { id: "other", videos: [{ ...video, video_id: "other-video" }], created_at: "2026-10-22", contributor_identifier: "ELDUPO000002" }];
+    assert.deepEqual(archivedVideos(archives.filter(a => a.contributor_identifier === "DIHOUT000001")), [video]);
+  });
   test("cancellation never archives or clears videos", async () => {
     let calls = 0;
     assert.equal(await archiveAfterConfirmation(false, async () => { calls++; }), false);

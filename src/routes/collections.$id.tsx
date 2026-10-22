@@ -9,15 +9,16 @@ import { Button } from "@/components/ui/button";
 import { CollectionVideos } from "@/components/CollectionVideos";
 import { savedCollectionsOptions, videoReviewsOptions, videoArchivesOptions } from "@/lib/saved-collections";
 import { validatedVideos, archivedVideos, archiveAfterConfirmation } from "@/lib/video-reviews";
+import { parseContributorGroup, contributorGroupId } from "@/lib/contributors";
 
 export const Route = createFileRoute("/collections/$id")({
   loader: async ({ context }) => {
     await Promise.all([context.queryClient.ensureQueryData(savedCollectionsOptions), context.queryClient.ensureQueryData(videoReviewsOptions), context.queryClient.ensureQueryData(videoArchivesOptions)]);
   },
   head: ({ params }) => ({ meta: [
-    { title: params.id === "validees-archivees" ? "Vidéos validées archivées — France Travail" : params.id === "validees" ? "Vidéos validées — France Travail" : "Collection de vidéos métiers — France Travail" },
+    { title: parseContributorGroup(params.id) ? `${parseContributorGroup(params.id)?.identifier} — Vidéos ${parseContributorGroup(params.id)?.archived ? "archivées" : "validées"} — France Travail` : params.id === "validees-archivees" ? "Vidéos validées archivées — France Travail" : params.id === "validees" ? "Vidéos validées — France Travail" : "Collection de vidéos métiers — France Travail" },
     { name: "description", content: "Vidéos métiers, codes ROME et OGR, validation et lecture des collections France Travail." },
-    { property: "og:title", content: params.id === "validees-archivees" ? "Vidéos validées archivées — France Travail" : params.id === "validees" ? "Vidéos validées — France Travail" : "Collection de vidéos métiers — France Travail" },
+    { property: "og:title", content: parseContributorGroup(params.id) ? `${parseContributorGroup(params.id)?.identifier} — Vidéos ${parseContributorGroup(params.id)?.archived ? "archivées" : "validées"} — France Travail` : params.id === "validees-archivees" ? "Vidéos validées archivées — France Travail" : params.id === "validees" ? "Vidéos validées — France Travail" : "Collection de vidéos métiers — France Travail" },
     { property: "og:description", content: "Consultez les vidéos et leurs métiers, puis retrouvez toutes les vidéos validées." },
     { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" },
   ] }),
@@ -33,17 +34,19 @@ function CollectionPage() {
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [clearing, setClearing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const general = id === "validees";
-  const archived = id === "validees-archivees";
+  const group = parseContributorGroup(id);
+  const general = id === "validees" || Boolean(group && !group.archived);
+  const archived = id === "validees-archivees" || Boolean(group?.archived);
   const collection = collections.find(c => c.id === id);
-  const videos = archived ? archivedVideos(archives) : general ? validatedVideos(collections, reviews) : collection?.videos ?? [];
+  const videos = archived ? archivedVideos(group ? archives.filter(row => row.contributor_identifier === group.identifier) : archives) : general ? validatedVideos(group ? collections.filter(row => row.contributor_identifier === group.identifier) : collections, reviews) : collection?.videos ?? [];
+  const title = `${group ? `${group.identifier} — ` : collection?.contributor_identifier ? `${collection.contributor_identifier} — ` : ""}${archived ? "Vidéos validées archivées" : general ? "Vidéos validées" : collection?.name ?? "Collection"}`;
 
   async function clearCollection() {
     if (clearing) return;
     setClearing(true); setError(null);
     try {
       await archiveAfterConfirmation(true, async () => {
-        const { error } = await supabase.rpc("archive_validated_videos");
+        const { error } = group ? await supabase.rpc("archive_contributor_videos", { target_identifier: group.identifier }) : await supabase.rpc("archive_validated_videos");
         if (error) throw new Error(error.message);
       });
       await Promise.all([
@@ -63,10 +66,10 @@ function CollectionPage() {
         {!general && <Button asChild variant="outline"><Link to="/collections/$id" params={{ id: "validees" }}>Vidéos validées</Link></Button>}
       </div>
       {!general && !archived && !collection ? <p className="mt-6 text-destructive">Collection introuvable.</p> : <>
-        <h1 className="mt-6 break-words font-display text-4xl font-extrabold">{archived ? "Vidéos validées archivées" : general ? "Vidéos validées" : collection?.name}</h1>
+        <h1 className="mt-6 break-words font-display text-4xl font-extrabold">{title}</h1>
         {general && <div className="mt-5 flex flex-wrap gap-3">
           <Button variant="destructive" disabled={videos.length === 0 || clearing} onClick={() => { setError(null); setConfirmOpen(true); }}><Archive className="size-4" />Vider la collection</Button>
-          <Button asChild variant="outline"><Link to="/collections/$id" params={{ id: "validees-archivees" }}>Vidéos validées archivées</Link></Button>
+          <Button asChild variant="outline"><Link to="/collections/$id" params={{ id: group ? contributorGroupId(group.identifier, true) : "validees-archivees" }}>Vidéos validées archivées</Link></Button>
         </div>}
         {!general && !archived && collection?.rome_code !== "LIBRE" && <p className="mt-2 text-muted-foreground">{collection?.rome_code} · {collection?.rome_label}</p>}
         <CollectionVideos key={`${id}:${videos.length}`} videos={videos} collectionId={general || archived ? undefined : id} emptyMessage={archived ? "Aucune vidéo archivée pour l’instant." : undefined} />
@@ -74,7 +77,7 @@ function CollectionPage() {
       {general && <AlertDialog open={confirmOpen} onOpenChange={open => { if (!clearing) setConfirmOpen(open); }}>
         <AlertDialogContent className="w-[calc(100%-2rem)]">
           <AlertDialogHeader>
-            <AlertDialogTitle>Vider la collection « Vidéos validées » ?</AlertDialogTitle>
+            <AlertDialogTitle>Vider la collection « {title} » ?</AlertDialogTitle>
             <AlertDialogDescription>Toutes les vidéos de cette collection seront déplacées dans « Vidéos validées archivées », avec leurs codes ROME, OGR, métier et informations associées. Les collections d’origine seront conservées.</AlertDialogDescription>
           </AlertDialogHeader>
           {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
