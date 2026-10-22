@@ -14,3 +14,4 @@
 - Store per-video review decisions separately, keyed by collection and video; immutable snapshots remain intact and public review access follows the existing account-free application model.
 - Derive the general validated collection from approved decisions and snapshots, deduplicating by video and métier references; this keeps membership current without copying or losing attached information.
 - Use the shared collection gallery for saved and validated videos; playback and reference display stay consistent.
+- Clear the validated collection through a single database RPC that snapshots complete approved videos and resets their decisions atomically; archives are cumulative, read-only snapshots rendered through the shared gallery.

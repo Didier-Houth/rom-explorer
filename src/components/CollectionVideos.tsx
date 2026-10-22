@@ -19,7 +19,7 @@ function CopyField({ label, value }: { label: string; value: string }) {
   </div>;
 }
 
-export function CollectionVideos({ videos, collectionId }: { videos: SavedVideo[]; collectionId?: string | undefined }) {
+export function CollectionVideos({ videos, collectionId, emptyMessage }: { videos: SavedVideo[]; collectionId?: string | undefined; emptyMessage?: string | undefined }) {
   const { data: reviews } = useSuspenseQuery(videoReviewsOptions);
   const queryClient = useQueryClient();
   const [selected, setSelected] = useState<SavedVideo | null>(null);
@@ -42,7 +42,7 @@ export function CollectionVideos({ videos, collectionId }: { videos: SavedVideo[
     {error && <p role="alert" className="mt-4 text-destructive">{error}</p>}
     <section className="mt-8">
       <h2 className="font-display text-2xl font-bold">Vidéos de la collection ({videos.length})</h2>
-      {videos.length === 0 && <p className="mt-4 text-muted-foreground">Aucune vidéo validée pour l’instant.</p>}
+      {videos.length === 0 && <p className="mt-4 text-muted-foreground">{emptyMessage ?? "Aucune vidéo validée pour l’instant."}</p>}
       <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {videos.map((v, index) => {
           const status = collectionId ? reviews.find(r => r.collection_id === collectionId && r.video_id === v.video_id)?.status ?? "pending" : "approved";
