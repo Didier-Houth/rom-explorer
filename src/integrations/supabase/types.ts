@@ -14,6 +14,32 @@ export type Database = {
   }
   public: {
     Tables: {
+      collection_video_reviews: {
+        Row: {
+          collection_id: string
+          status: string
+          video_id: string
+        }
+        Insert: {
+          collection_id: string
+          status?: string
+          video_id: string
+        }
+        Update: {
+          collection_id?: string
+          status?: string
+          video_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collection_video_reviews_collection_id_fkey"
+            columns: ["collection_id"]
+            isOneToOne: false
+            referencedRelation: "collections_videos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       collections_videos: {
         Row: {
           created_at: string
