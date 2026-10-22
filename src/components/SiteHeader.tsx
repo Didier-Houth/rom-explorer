@@ -37,7 +37,7 @@ export function SiteHeader() {
             Historique
           </Link>
         </nav>
-        {user ? <div className="flex flex-wrap items-center gap-2 text-sm text-primary-foreground"><span>{profile?.identifier ?? "Compte connecté"}</span><Button variant="secondary" size="sm" onClick={async () => { await queryClient.cancelQueries(); queryClient.clear(); await supabase.auth.signOut(); }}>Se déconnecter</Button></div> : <div className="flex flex-col items-end gap-1"><HeaderSignIn /><span className="text-xs text-primary-foreground/70">Ou recherchez librement en visiteur</span></div>}
+        {user ? <div className="flex flex-wrap items-center gap-2 text-sm text-primary-foreground">{profile ? <Link to="/contributeurs/$identifier" params={{ identifier: profile.identifier }} className="font-semibold underline">{profile.identifier}</Link> : <span>Compte connecté</span>}<Button variant="secondary" size="sm" onClick={async () => { await queryClient.cancelQueries(); queryClient.clear(); await supabase.auth.signOut(); }}>Se déconnecter</Button></div> : <div className="flex flex-col items-end gap-1"><HeaderSignIn /><span className="text-xs text-primary-foreground/70">Ou recherchez librement en visiteur</span></div>}
       </div>
     </header>
   );
