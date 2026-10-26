@@ -204,6 +204,10 @@ export type Database = {
         Args: { target_identifier: string }
         Returns: number
       }
+      archive_one_video: {
+        Args: { target_identifier: string; target_video_id: string }
+        Returns: number
+      }
       archive_validated_videos: { Args: never; Returns: number }
       contributor_letters: { Args: { value: string }; Returns: string }
       current_identifier: { Args: never; Returns: string }
@@ -223,6 +227,10 @@ export type Database = {
       register_contributor: {
         Args: { first_name: string; last_name: string }
         Returns: string
+      }
+      restore_one_video: {
+        Args: { target_identifier: string; target_video_id: string }
+        Returns: number
       }
     }
     Enums: {

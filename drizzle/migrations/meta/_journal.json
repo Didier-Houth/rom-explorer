@@ -57,6 +57,13 @@
       "when": 1793021855058,
       "tag": "0007_keep_validated_after_archive",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793023726912,
+      "tag": "0008_archive_restore_single_video",
+      "breakpoints": true
     }
   ]
 }
