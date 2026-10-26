@@ -25,8 +25,16 @@ export function videoReferences(video: SavedVideo) {
   };
 }
 
+export function rejectedVideos(collections: SavedCollection[], reviews: Review[]): SavedVideo[] {
+  return videosWithStatus(collections, reviews, "rejected");
+}
+
 export function validatedVideos(collections: SavedCollection[], reviews: Review[]): SavedVideo[] {
-  const approved = new Set(reviews.filter(r => r.status === "approved").map(r => `${r.collection_id}:${r.video_id}`));
+  return videosWithStatus(collections, reviews, "approved");
+}
+
+function videosWithStatus(collections: SavedCollection[], reviews: Review[], status: ReviewStatus): SavedVideo[] {
+  const approved = new Set(reviews.filter(r => r.status === status).map(r => `${r.collection_id}:${r.video_id}`));
   const unique = new Map<string, SavedVideo>();
   for (const collection of collections) {
     for (const video of collection.videos) {

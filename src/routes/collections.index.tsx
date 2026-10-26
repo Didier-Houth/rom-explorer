@@ -1,11 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Archive, CheckCircle2 } from "lucide-react";
+import { Archive, CheckCircle2, XCircle } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { savedCollectionsOptions, videoReviewsOptions, videoArchivesOptions } from "@/lib/saved-collections";
-import { validatedVideos, archivedVideos } from "@/lib/video-reviews";
-import { contributorGroupId } from "@/lib/contributors";
+import { validatedVideos, archivedVideos, rejectedVideos } from "@/lib/video-reviews";
+import { contributorGroupId, rejectedGroupId } from "@/lib/contributors";
 
 export const Route = createFileRoute("/collections/")({
   loader: async ({ context }) => {
@@ -47,6 +47,12 @@ function CollectionsPage() {
           <p className="font-display text-lg font-bold text-archive">Vidéos validées archivées</p>
           <p className="mt-3 text-sm font-semibold text-archive">{archivedVideos(archives).length} vidéo(s)</p>
         </Link>
+        <Link to="/collections/$id" params={{ id: "refusees" }} className="rounded-lg border-2 border-destructive bg-destructive/10 p-5 transition-colors hover:bg-destructive/20">
+          <XCircle className="mb-3 size-7 text-destructive" />
+          <p className="font-display text-lg font-bold text-destructive">Vidéos refusées</p>
+          <p className="mt-1 text-sm text-muted-foreground">Collection générale</p>
+          <p className="mt-3 text-sm font-semibold text-destructive">{rejectedVideos(rows, reviews).length} vidéo(s)</p>
+        </Link>
         {rows.map(c => <Link key={c.id} to="/collections/$id" params={{ id: c.id }} className="rounded-lg border border-border bg-card p-5 shadow-sm transition-colors hover:border-primary">
           <p className="break-words font-display text-lg font-bold">{c.contributor_identifier ? `${c.contributor_identifier} — ` : ""}{c.name}</p>
           {c.rome_code !== "LIBRE" && <p className="mt-1 text-sm text-muted-foreground">{c.rome_code} · {c.rome_label}</p>}
@@ -61,6 +67,9 @@ function CollectionsPage() {
           </Link>
           <Link to="/collections/$id" params={{ id: contributorGroupId(identifier, true) }} className="rounded-lg border-2 border-archive bg-archive/10 p-5 text-archive">
             <Archive className="mb-3 size-6" /><p className="break-words font-bold">{identifier} — Vidéos validées archivées</p><p className="mt-2 text-sm">{archivedVideos(archives.filter(row => row.contributor_identifier === identifier)).length} vidéo(s)</p>
+          </Link>
+          <Link to="/collections/$id" params={{ id: rejectedGroupId(identifier) }} className="rounded-lg border-2 border-destructive bg-destructive/10 p-5 text-destructive">
+            <XCircle className="mb-3 size-6" /><p className="break-words font-bold">{identifier} — Vidéos refusées</p><p className="mt-2 text-sm">{rejectedVideos(rows.filter(row => row.contributor_identifier === identifier), reviews).length} vidéo(s)</p>
           </Link>
         </div>
       </section>)}

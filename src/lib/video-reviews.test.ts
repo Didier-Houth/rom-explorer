@@ -1,6 +1,6 @@
 import { describe, test } from "node:test";
 import { strict as assert } from "node:assert";
-import { nextReviewStatus, validatedVideos, videoReferences, archivedVideos, archiveAfterConfirmation, type SavedCollection, type SavedVideo } from "./video-reviews";
+import { nextReviewStatus, validatedVideos, rejectedVideos, videoReferences, archivedVideos, archiveAfterConfirmation, type SavedCollection, type SavedVideo } from "./video-reviews";
 
 const video: SavedVideo = { video_id: "abcdefghijk", rome_code: "C1107 – OGR 61", rome_label: "Chargé d'indemnisations", title: "Métier", channel_title: "Chaîne", duration_seconds: 90, long_link: "https://youtu.be/abcdefghijk", watch_link: "https://www.youtube.com/watch?v=abcdefghijk", thumbnail_url: "", summary: "Résumé" };
 const collection: SavedCollection = { id: "collection", name: "Assurances", rome_code: video.rome_code, rome_label: video.rome_label, videos: [video], created_at: "2026-10-22" };
@@ -13,6 +13,10 @@ describe("video review decisions", () => {
     assert.deepEqual(validatedVideos([collection], [{ collection_id: "collection", video_id: video.video_id, status: "approved" }]), [video]);
     assert.deepEqual(validatedVideos([collection], [{ collection_id: "collection", video_id: video.video_id, status: "rejected" }]), []);
     assert.deepEqual(validatedVideos([collection], []), []);
+  });
+  test("rejected collection contains only rejected videos", () => {
+    assert.deepEqual(rejectedVideos([collection], [{ collection_id: "collection", video_id: video.video_id, status: "rejected" }]), [video]);
+    assert.deepEqual(rejectedVideos([collection], [{ collection_id: "collection", video_id: video.video_id, status: "approved" }]), []);
   });
   test("preserves separate ROME, OGR and métier", () => assert.deepEqual(videoReferences(video), { rome: "C1107", ogr: "61", metier: "Chargé d'indemnisations" }));
   test("does not invent an OGR for older videos", () => assert.equal(videoReferences({ ...video, rome_code: "M1805" }).ogr, ""));

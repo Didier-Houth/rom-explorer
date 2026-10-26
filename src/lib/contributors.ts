@@ -16,8 +16,12 @@ export function contributorGroupId(identifier: string, archived = false) {
   return `${archived ? "archivees" : "validees"}--${identifier}`;
 }
 
+export function rejectedGroupId(identifier: string) {
+  return `refusees--${identifier}`;
+}
+
 export function parseContributorGroup(id: string) {
-  const match = /^(validees|archivees)--([A-Z]{6}\d{6})$/.exec(id);
+  const match = /^(validees|archivees|refusees)--([A-Z]{6}\d{6})$/.exec(id);
   const identifier = match?.[2];
-  return match && identifier ? { identifier, archived: match[1] === "archivees" } : null;
+  return match && identifier ? { identifier, archived: match[1] === "archivees", rejected: match[1] === "refusees" } : null;
 }
