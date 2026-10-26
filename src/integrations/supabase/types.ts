@@ -16,16 +16,19 @@ export type Database = {
     Tables: {
       collection_video_reviews: {
         Row: {
+          archived_at: string | null
           collection_id: string
           status: string
           video_id: string
         }
         Insert: {
+          archived_at?: string | null
           collection_id: string
           status?: string
           video_id: string
         }
         Update: {
+          archived_at?: string | null
           collection_id?: string
           status?: string
           video_id?: string
