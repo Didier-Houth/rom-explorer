@@ -14,6 +14,13 @@ describe("video review decisions", () => {
     assert.deepEqual(validatedVideos([collection], [{ collection_id: "collection", video_id: video.video_id, status: "rejected" }]), []);
     assert.deepEqual(validatedVideos([collection], []), []);
   });
+  test("archived approvals stay Validée in the origin collection but leave the general collection", () => {
+    const archivedReview = { collection_id: "collection", video_id: video.video_id, status: "approved" as const, archived_at: "2026-10-26T12:00:00.000Z" };
+    assert.deepEqual(validatedVideos([collection], [archivedReview]), []);
+    assert.equal(archivedReview.status, "approved");
+    const reValidated = { ...archivedReview, archived_at: null };
+    assert.deepEqual(validatedVideos([collection], [reValidated]), [video]);
+  });
   test("rejected collection contains only rejected videos", () => {
     assert.deepEqual(rejectedVideos([collection], [{ collection_id: "collection", video_id: video.video_id, status: "rejected" }]), [video]);
     assert.deepEqual(rejectedVideos([collection], [{ collection_id: "collection", video_id: video.video_id, status: "approved" }]), []);

@@ -31,7 +31,7 @@ export function CollectionVideos({ videos, collectionId, emptyMessage, statusOve
     setSaving(video.video_id); setError(null);
     try {
       const status = nextReviewStatus(current, choice, checked);
-      const { error } = await supabase.from("collection_video_reviews").upsert({ collection_id: collectionId, video_id: video.video_id, status }, { onConflict: "collection_id,video_id" });
+      const { error } = await supabase.from("collection_video_reviews").upsert({ collection_id: collectionId, video_id: video.video_id, status, archived_at: null }, { onConflict: "collection_id,video_id" });
       if (error) throw new Error(error.message);
       await queryClient.invalidateQueries({ queryKey: videoReviewsOptions.queryKey });
     } catch { setError("Le choix n’a pas été enregistré. Réessayez."); }
