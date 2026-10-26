@@ -43,7 +43,7 @@ function ContributorPage() {
       <h1 className="mt-6 break-words font-display text-4xl font-extrabold">{identifier}</h1>
       <div className="mt-8 grid gap-4 sm:grid-cols-2">
         <Link to="/collections/$id" params={{ id: contributorGroupId(identifier) }} className="rounded-lg border-2 border-success bg-success/10 p-5 text-success hover:bg-success/20">
-          <CheckCircle2 className="mb-3 size-6" /><p className="font-bold">Vidéos validées</p><p className="mt-2 text-sm">{validated} vidéo(s)</p>
+          <CheckCircle2 className="mb-3 size-6" /><p className="font-bold">Vidéos validées en attente</p><p className="mt-2 text-sm">{validated} vidéo(s)</p>
         </Link>
         <Link to="/collections/$id" params={{ id: contributorGroupId(identifier, true) }} className="rounded-lg border-2 border-archive bg-archive/10 p-5 text-archive hover:bg-archive/20">
           <Archive className="mb-3 size-6" /><p className="font-bold">Vidéos validées archivées</p><p className="mt-2 text-sm">{archived} vidéo(s)</p>
