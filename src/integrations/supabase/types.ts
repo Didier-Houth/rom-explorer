@@ -105,6 +105,24 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       validated_video_archives: {
         Row: {
           contributor_identifier: string | null
@@ -185,11 +203,19 @@ export type Database = {
       }
       archive_validated_videos: { Args: never; Returns: number }
       contributor_letters: { Args: { value: string }; Returns: string }
+      current_identifier: { Args: never; Returns: string }
       find_contributor_identifiers: {
         Args: { prefix: string }
         Returns: {
           identifier: string
         }[]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
       }
       register_contributor: {
         Args: { first_name: string; last_name: string }
@@ -197,7 +223,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -324,6 +350,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "user"],
+    },
   },
 } as const

@@ -43,6 +43,13 @@
       "when": 1792668487570,
       "tag": "0005_protected_collection_contributors",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793017723995,
+      "tag": "0006_owner_only_collections",
+      "breakpoints": true
     }
   ]
 }
