@@ -1,5 +1,5 @@
 export type ReviewStatus = "pending" | "approved" | "rejected";
-export type Review = { collection_id: string; video_id: string; status: ReviewStatus };
+export type Review = { collection_id: string; video_id: string; status: ReviewStatus; archived_at?: string | null };
 export type SavedVideo = {
   rome_code: string; rome_label: string; ogr_code?: string;
   video_id: string; title: string; channel_title: string;
@@ -34,7 +34,7 @@ export function validatedVideos(collections: SavedCollection[], reviews: Review[
 }
 
 function videosWithStatus(collections: SavedCollection[], reviews: Review[], status: ReviewStatus): SavedVideo[] {
-  const approved = new Set(reviews.filter(r => r.status === status).map(r => `${r.collection_id}:${r.video_id}`));
+  const approved = new Set(reviews.filter(r => r.status === status && (status !== "approved" || !r.archived_at)).map(r => `${r.collection_id}:${r.video_id}`));
   const unique = new Map<string, SavedVideo>();
   for (const collection of collections) {
     for (const video of collection.videos) {

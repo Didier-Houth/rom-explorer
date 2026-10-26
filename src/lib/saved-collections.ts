@@ -15,7 +15,7 @@ export const savedCollectionsOptions = queryOptions({
 export const videoReviewsOptions = queryOptions({
   queryKey: ["collection-video-reviews"],
   queryFn: async () => {
-    const { data, error } = await supabase.from("collection_video_reviews").select("collection_id,video_id,status");
+    const { data, error } = await supabase.from("collection_video_reviews").select("collection_id,video_id,status,archived_at");
     if (error) throw new Error(error.message);
     return (data ?? []) as Review[];
   },
