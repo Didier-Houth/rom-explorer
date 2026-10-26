@@ -19,7 +19,7 @@ function CopyField({ label, value }: { label: string; value: string }) {
   </div>;
 }
 
-export function CollectionVideos({ videos, collectionId, emptyMessage }: { videos: SavedVideo[]; collectionId?: string | undefined; emptyMessage?: string | undefined }) {
+export function CollectionVideos({ videos, collectionId, emptyMessage, statusOverride }: { videos: SavedVideo[]; collectionId?: string | undefined; emptyMessage?: string | undefined; statusOverride?: ReviewStatus | undefined }) {
   const { data: reviews } = useSuspenseQuery(videoReviewsOptions);
   const queryClient = useQueryClient();
   const [selected, setSelected] = useState<SavedVideo | null>(null);
@@ -45,7 +45,7 @@ export function CollectionVideos({ videos, collectionId, emptyMessage }: { video
       {videos.length === 0 && <p className="mt-4 text-muted-foreground">{emptyMessage ?? "Aucune vidéo validée pour l’instant."}</p>}
       <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {videos.map((v, index) => {
-          const status = collectionId ? reviews.find(r => r.collection_id === collectionId && r.video_id === v.video_id)?.status ?? "pending" : "approved";
+          const status = statusOverride ?? (collectionId ? reviews.find(r => r.collection_id === collectionId && r.video_id === v.video_id)?.status ?? "pending" : "approved");
           const ref = videoReferences(v);
           const colors = status === "approved" ? "border-success bg-success/10" : status === "rejected" ? "border-destructive bg-destructive/10" : "border-border bg-card";
           return <article key={`${v.video_id}:${index}`} data-review={status} className={`overflow-hidden rounded-lg border-2 ${colors}`}>
