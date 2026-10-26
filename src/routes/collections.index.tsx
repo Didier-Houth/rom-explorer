@@ -43,7 +43,7 @@ function CollectionsPage() {
         {isAdmin && <>
         <Link to="/collections/$id" params={{ id: "validees" }} className="rounded-lg border-2 border-success bg-success/10 p-5 transition-colors hover:bg-success/20">
           <CheckCircle2 className="mb-3 size-7 text-success" />
-          <p className="font-display text-lg font-bold text-success">Vidéos validées</p>
+          <p className="font-display text-lg font-bold text-success">Vidéos validées en attente</p>
           <p className="mt-1 text-sm text-muted-foreground">Collection générale</p>
           <p className="mt-3 text-sm font-semibold text-success">{count} vidéo{count > 1 ? "s" : ""}</p>
         </Link>
@@ -69,7 +69,7 @@ function CollectionsPage() {
         <h2 className="break-words font-display text-xl font-bold"><Link to="/contributeurs/$identifier" params={{ identifier }} className="underline hover:text-primary">{identifier}</Link></h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <Link to="/collections/$id" params={{ id: contributorGroupId(identifier) }} className="rounded-lg border-2 border-success bg-success/10 p-5 text-success">
-            <CheckCircle2 className="mb-3 size-6" /><p className="break-words font-bold">{identifier} — Vidéos validées</p><p className="mt-2 text-sm">{validatedVideos(rows.filter(row => row.contributor_identifier === identifier), reviews).length} vidéo(s)</p>
+            <CheckCircle2 className="mb-3 size-6" /><p className="break-words font-bold">{identifier} — Vidéos validées en attente</p><p className="mt-2 text-sm">{validatedVideos(rows.filter(row => row.contributor_identifier === identifier), reviews).length} vidéo(s)</p>
           </Link>
           <Link to="/collections/$id" params={{ id: contributorGroupId(identifier, true) }} className="rounded-lg border-2 border-archive bg-archive/10 p-5 text-archive">
             <Archive className="mb-3 size-6" /><p className="break-words font-bold">{identifier} — Vidéos validées archivées</p><p className="mt-2 text-sm">{archivedVideos(archives.filter(row => row.contributor_identifier === identifier)).length} vidéo(s)</p>
