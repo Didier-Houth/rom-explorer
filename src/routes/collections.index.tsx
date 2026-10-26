@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { Archive, CheckCircle2, XCircle } from "lucide-react";
+import { useContributorAuth } from "@/components/ContributorAuth";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
 import { savedCollectionsOptions, videoReviewsOptions, videoArchivesOptions } from "@/lib/saved-collections";
@@ -8,6 +9,7 @@ import { validatedVideos, archivedVideos, rejectedVideos } from "@/lib/video-rev
 import { contributorGroupId, rejectedGroupId } from "@/lib/contributors";
 
 export const Route = createFileRoute("/collections/")({
+  ssr: false,
   loader: async ({ context }) => {
     await Promise.all([context.queryClient.ensureQueryData(savedCollectionsOptions), context.queryClient.ensureQueryData(videoReviewsOptions), context.queryClient.ensureQueryData(videoArchivesOptions)]);
   },
@@ -25,6 +27,7 @@ function CollectionsPage() {
   const { data: rows } = useSuspenseQuery(savedCollectionsOptions);
   const { data: reviews } = useSuspenseQuery(videoReviewsOptions);
   const { data: archives } = useSuspenseQuery(videoArchivesOptions);
+  const { user, isAdmin } = useContributorAuth();
   const count = validatedVideos(rows, reviews).length;
   const identifiers = [...new Set([...rows, ...archives].map(row => row.contributor_identifier).filter((identifier): identifier is string => Boolean(identifier)))].sort();
   return <div className="min-h-screen bg-background">
@@ -35,7 +38,9 @@ function CollectionsPage() {
         <Button asChild variant="link"><Link to="/historique">Historique</Link></Button>
       </div>
       <h1 className="mt-6 font-display text-4xl font-extrabold">Collections enregistrées</h1>
+      {!user && <p className="mt-6 rounded-lg border border-border bg-card p-5">Connectez-vous en haut de la page pour voir vos collections.</p>}
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {isAdmin && <>
         <Link to="/collections/$id" params={{ id: "validees" }} className="rounded-lg border-2 border-success bg-success/10 p-5 transition-colors hover:bg-success/20">
           <CheckCircle2 className="mb-3 size-7 text-success" />
           <p className="font-display text-lg font-bold text-success">Vidéos validées</p>
@@ -53,6 +58,7 @@ function CollectionsPage() {
           <p className="mt-1 text-sm text-muted-foreground">Collection générale</p>
           <p className="mt-3 text-sm font-semibold text-destructive">{rejectedVideos(rows, reviews).length} vidéo(s)</p>
         </Link>
+        </>}
         {rows.map(c => <Link key={c.id} to="/collections/$id" params={{ id: c.id }} className="rounded-lg border border-border bg-card p-5 shadow-sm transition-colors hover:border-primary">
           <p className="break-words font-display text-lg font-bold">{c.contributor_identifier ? `${c.contributor_identifier} — ` : ""}{c.name}</p>
           {c.rome_code !== "LIBRE" && <p className="mt-1 text-sm text-muted-foreground">{c.rome_code} · {c.rome_label}</p>}

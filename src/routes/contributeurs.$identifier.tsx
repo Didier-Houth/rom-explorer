@@ -8,6 +8,7 @@ import { validatedVideos, archivedVideos, rejectedVideos } from "@/lib/video-rev
 import { contributorGroupId, rejectedGroupId } from "@/lib/contributors";
 
 export const Route = createFileRoute("/contributeurs/$identifier")({
+  ssr: false,
   loader: async ({ context }) => {
     await Promise.all([context.queryClient.ensureQueryData(savedCollectionsOptions), context.queryClient.ensureQueryData(videoReviewsOptions), context.queryClient.ensureQueryData(videoArchivesOptions)]);
   },

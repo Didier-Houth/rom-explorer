@@ -6,6 +6,7 @@ import { SiteHeader } from "@/components/SiteHeader";
 import { collectionPayload } from "@/lib/collections";
 
 export const Route = createFileRoute("/historique")({
+  ssr: false,
   head: () => ({
     meta: [
       { title: "Historique des recherches — Vidéos métiers ROME" },
