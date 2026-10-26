@@ -20,3 +20,4 @@
 - Use one root authentication provider and identity-transition listener for session-aware controls and cache invalidation; defer auth callback queries to avoid session-lock deadlocks.
 - Remember only the successfully submitted email locally through the shared email helper; never persist passwords, and always retain verified sign-in for collection saving.
 - Validate new passwords through the shared password-policy helper on signup and reset; one policy prevents inconsistent checks without blocking existing sign-ins.
+- Collections, reviews and archives are readable only by their owner or an admin (user_roles + has_role); collection pages are client-rendered (ssr: false) so reads carry the session.
