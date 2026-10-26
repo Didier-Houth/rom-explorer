@@ -19,7 +19,8 @@ function CopyField({ label, value }: { label: string; value: string }) {
   </div>;
 }
 
-export function CollectionVideos({ videos, collectionId, emptyMessage, statusOverride }: { videos: SavedVideo[]; collectionId?: string | undefined; emptyMessage?: string | undefined; statusOverride?: ReviewStatus | undefined }) {
+export function CollectionVideos({ videos, collectionId, emptyMessage, statusOverride, action }: { videos: SavedVideo[]; collectionId?: string | undefined; emptyMessage?: string | undefined; statusOverride?: ReviewStatus | undefined; action?: { label: string; run: (video: SavedVideo) => Promise<void> } | undefined }) {
+  const [acting, setActing] = useState<string | null>(null);
   const { data: reviews } = useSuspenseQuery(videoReviewsOptions);
   const queryClient = useQueryClient();
   const [selected, setSelected] = useState<SavedVideo | null>(null);
@@ -66,6 +67,12 @@ export function CollectionVideos({ videos, collectionId, emptyMessage, statusOve
             {collectionId && <div className="flex flex-wrap gap-x-6 gap-y-3 border-t border-border px-4 py-3">
               <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold text-destructive"><Checkbox aria-label={`Refusée — ${v.title}`} checked={status === "rejected"} disabled={saving !== null} onCheckedChange={checked => void review(v, status, "rejected", checked === true)} className="border-destructive data-[state=checked]:bg-destructive" />Refusée</label>
               <label className="flex cursor-pointer items-center gap-2 text-sm font-semibold text-success"><Checkbox aria-label={`Validée — ${v.title}`} checked={status === "approved"} disabled={saving !== null} onCheckedChange={checked => void review(v, status, "approved", checked === true)} className="border-success data-[state=checked]:bg-success" />Validée</label>
+            </div>}
+            {action && <div className="border-t border-border px-4 py-3">
+              <Button variant="outline" size="sm" disabled={acting !== null} aria-label={`${action.label} — ${v.title}`} onClick={async () => {
+                setActing(v.video_id); setError(null);
+                try { await action.run(v); } catch { setError("L’action n’a pas été enregistrée. Réessayez."); } finally { setActing(null); }
+              }}>{acting === v.video_id ? "En cours…" : action.label}</Button>
             </div>}
           </article>;
         })}
