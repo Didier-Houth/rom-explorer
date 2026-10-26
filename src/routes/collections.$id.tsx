@@ -74,7 +74,7 @@ function CollectionPage() {
           <Button asChild variant="outline"><Link to="/collections/$id" params={{ id: group ? contributorGroupId(group.identifier, true) : "validees-archivees" }}>Vidéos validées archivées</Link></Button>
         </div>}
         {!general && !archived && !rejected && collection?.rome_code !== "LIBRE" && <p className="mt-2 text-muted-foreground">{collection?.rome_code} · {collection?.rome_label}</p>}
-        <CollectionVideos key={`${id}:${videos.length}`} videos={videos} collectionId={general || archived || rejected ? undefined : id} emptyMessage={rejected ? "Aucune vidéo refusée pour l’instant." : archived ? "Aucune vidéo archivée pour l’instant." : undefined} />
+        <CollectionVideos key={`${id}:${videos.length}`} videos={videos} collectionId={general || archived || rejected ? undefined : id} statusOverride={rejected ? "rejected" : undefined} emptyMessage={rejected ? "Aucune vidéo refusée pour l’instant." : archived ? "Aucune vidéo archivée pour l’instant." : undefined} />
       </>}
       {general && <AlertDialog open={confirmOpen} onOpenChange={open => { if (!clearing) setConfirmOpen(open); }}>
         <AlertDialogContent className="w-[calc(100%-2rem)]">
