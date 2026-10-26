@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Library } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { displayRomeCodePair, isRomeCodeFormat, lookupRomeLabel, normalizeRomeCode, OGR_CODES, ogrCodesForRome, ROME_CODES } from "@/lib/rome-codes";
 import { searchRomeVideos, summarizeVideo, type VideoResult } from "@/lib/youtube.functions";
 
@@ -127,24 +127,41 @@ function Index() {
   const [collectionError, setCollectionError] = useState<string | null>(null);
   const [videoTexts, setVideoTexts] = useState<Record<string, { transcript: string | null; summary: string }>>({});
   const [draftLoaded, setDraftLoaded] = useState(false);
+  // Brouillon de collection : il ne sert que pendant une identification
+  // Google/Lovable (redirection complète de la page). Il est effacé dès que
+  // le dialogue d'identification se ferme, pour ne jamais réafficher une
+  // ancienne collection quand on revient sur le formulaire.
+  const identificationOpenRef = useRef(identificationOpen);
+  useEffect(() => { identificationOpenRef.current = identificationOpen; }, [identificationOpen]);
   useEffect(() => {
     try {
       const stored = sessionStorage.getItem("collection-identification-draft");
-      if (stored) {
-        const draft = JSON.parse(stored);
-        if (Array.isArray(draft.collection)) {
-          setCollection(draft.collection); setCollectionName(draft.name ?? "");
-          setCollectionCode(draft.code ?? ""); setCollectionMetier(draft.metier ?? "");
-          setIdentificationOpen(Boolean(draft.identificationOpen));
-        }
+      const draft = stored ? JSON.parse(stored) : null;
+      if (draft?.identificationOpen && Array.isArray(draft.collection)) {
+        setCollection(draft.collection); setCollectionName(draft.name ?? "");
+        setCollectionCode(draft.code ?? ""); setCollectionMetier(draft.metier ?? "");
+        setIdentificationOpen(true);
+      } else if (stored) {
+        sessionStorage.removeItem("collection-identification-draft");
       }
     } catch { /* An unreadable draft must not block the form. */ }
     setDraftLoaded(true);
   }, []);
   useEffect(() => {
     if (!draftLoaded) return;
-    try { sessionStorage.setItem("collection-identification-draft", JSON.stringify({ collection, name: collectionName, code: collectionCode, metier: collectionMetier, identificationOpen })); } catch { /* The current collection remains available if storage is full. */ }
+    try {
+      if (identificationOpen) {
+        sessionStorage.setItem("collection-identification-draft", JSON.stringify({ collection, name: collectionName, code: collectionCode, metier: collectionMetier, identificationOpen: true }));
+      } else {
+        sessionStorage.removeItem("collection-identification-draft");
+      }
+    } catch { /* The current collection remains available if storage is full. */ }
   }, [draftLoaded, collection, collectionName, collectionCode, collectionMetier, identificationOpen]);
+  useEffect(() => () => {
+    if (!identificationOpenRef.current) {
+      try { sessionStorage.removeItem("collection-identification-draft"); } catch { /* Nothing to clean. */ }
+    }
+  }, []);
 
   function toggleCollection(video: VideoResult, romeCode: string, romeLabel: string) {
     setCollectionMessage(null);
