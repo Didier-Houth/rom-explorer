@@ -64,6 +64,13 @@
       "when": 1793023726912,
       "tag": "0008_archive_restore_single_video",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1793094999781,
+      "tag": "0009_restrict_videos_metiers_read",
+      "breakpoints": true
     }
   ]
 }
