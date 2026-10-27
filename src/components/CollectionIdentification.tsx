@@ -36,7 +36,7 @@ export function CollectionIdentification({ open, onOpenChange, onIdentified }: {
     if (profile) { setFirstName(profile.first_name); setLastName(profile.last_name); setPrefix(profile.identifier); setSelected(profile.identifier); }
   }, [open, profile]);
   useEffect(() => {
-    if (!open || prefix.length < 2) { setMatches([]); return; }
+    if (!open || !user || prefix.length < 2) { setMatches([]); return; }
     let current = true;
     const timer = setTimeout(async () => {
       const result = await supabase.rpc("find_contributor_identifiers", { prefix });
