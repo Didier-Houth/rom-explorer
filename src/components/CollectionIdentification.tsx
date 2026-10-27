@@ -43,7 +43,7 @@ export function CollectionIdentification({ open, onOpenChange, onIdentified }: {
       if (current) { setMatches((result.data ?? []).map(row => row.identifier)); if (result.error) setError("La recherche des identifiants a échoué."); }
     }, 250);
     return () => { current = false; clearTimeout(timer); };
-  }, [prefix, open]);
+  }, [prefix, open, user]);
 
   async function submit() {
     setBusy(true); setError(""); setMessage("");
