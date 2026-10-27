@@ -71,6 +71,13 @@
       "when": 1793094999781,
       "tag": "0009_restrict_videos_metiers_read",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1793095516798,
+      "tag": "0010_restrict_identifier_search",
+      "breakpoints": true
     }
   ]
 }
