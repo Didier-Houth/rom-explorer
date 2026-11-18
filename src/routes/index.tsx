@@ -9,14 +9,12 @@ import {
   DEFAULT_ETHICAL_CRITERIA_ID,
   ETHICAL_CRITERIA,
 } from "@/lib/ethical-criteria";
-
-const SEARCH_TEMPLATES = [
-  "Métier de [métier] témoignage",
-  "[métier] témoignage professionnel",
-  "Je suis [métier]",
-  "Une journée dans la vie de [métier]",
-  "Découvrir le métier de [métier]",
-] as const;
+import {
+  DEFAULT_SEARCH_FORMULATION_ID,
+  formulationTemplates,
+  mergeVideoResults,
+  SEARCH_FORMULATIONS,
+} from "@/lib/search-formulations";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Button } from "@/components/ui/button";
@@ -223,7 +221,7 @@ function Index() {
   const ogrOptions = useMemo(() => ogrCodesForRome(romeCode), [romeCode]);
   // Tous les codes ROME triés (famille A à N) pour la liste complète.
   const romeOptions = useMemo(() => Object.keys(ROME_CODES).sort(), []);
-  const [template, setTemplate] = useState<string>(SEARCH_TEMPLATES[0]);
+  const [template, setTemplate] = useState<string>(DEFAULT_SEARCH_FORMULATION_ID);
   // Critères éthiques ajoutés à la recherche YouTube (« Tous critères » par défaut).
   const [criteria, setCriteria] = useState<string>(DEFAULT_ETHICAL_CRITERIA_ID);
   // Libellé utilisé pour la recherche YouTube : le métier saisi librement est prioritaire
@@ -237,7 +235,7 @@ function Index() {
     setRomeCode("");
     setOgrCode("");
     setMetierLibre("");
-    setTemplate(SEARCH_TEMPLATES[0]);
+    setTemplate(DEFAULT_SEARCH_FORMULATION_ID);
     setCriteria(DEFAULT_ETHICAL_CRITERIA_ID);
     setResults(null);
     setSelected(null);
@@ -268,13 +266,28 @@ function Index() {
     }
     setLoading(true);
     try {
-      const items = await search({
-        data: {
-          romeCode: displayRomeCodePair(romeCode, ogrCode) || "LIBRE",
-          romeLabel: searchLabel,
-          query: buildSearchQuery(template, searchLabel, criteria),
-        },
-      });
+      // « Tous critères » lance une recherche par formulation, puis rassemble les vidéos trouvées.
+      const attempts = await Promise.allSettled(
+        formulationTemplates(template).map((formulation) =>
+          search({
+            data: {
+              romeCode: displayRomeCodePair(romeCode, ogrCode) || "LIBRE",
+              romeLabel: searchLabel,
+              query: buildSearchQuery(formulation, searchLabel, criteria),
+            },
+          }),
+        ),
+      );
+      const found: VideoResult[][] = [];
+      let failure: unknown = null;
+      for (const attempt of attempts) {
+        if (attempt.status === "fulfilled") found.push(attempt.value);
+        else if (!failure) failure = attempt.reason;
+      }
+      if (found.length === 0) {
+        throw failure instanceof Error ? failure : new Error("La recherche a échoué.");
+      }
+      const items = mergeVideoResults(found);
       setResults(items);
       document.getElementById("resultats")?.scrollIntoView({ behavior: "smooth", block: "start" });
       if (items.length === 0) {
@@ -594,12 +607,17 @@ function Index() {
                 onChange={(e) => setTemplate(e.target.value)}
                 className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground outline-none focus:border-ring focus:ring-2 focus:ring-ring/30"
               >
-                {SEARCH_TEMPLATES.map((t) => (
-                  <option key={t} value={t}>
-                    {t.replace("[métier]", searchLabel || "[métier]")}
+                {SEARCH_FORMULATIONS.map((formulation) => (
+                  <option key={formulation.id} value={formulation.id}>
+                    {formulation.label.replace("[métier]", searchLabel || "[métier]")}
+                    {formulation.id === DEFAULT_SEARCH_FORMULATION_ID ? " (par défaut)" : ""}
                   </option>
                 ))}
               </select>
+              <p className="text-xs text-muted-foreground">
+                « Tous critères » lance une recherche pour chacune des cinq formulations et rassemble
+                les vidéos trouvées ; une formulation seule ne cherche qu'avec elle.
+              </p>
             </div>
             <div className="space-y-1.5 sm:col-span-3">
               <label

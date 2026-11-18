@@ -21,3 +21,4 @@
 - Remember only the successfully submitted email locally through the shared email helper; never persist passwords, and always retain verified sign-in for collection saving.
 - Validate new passwords through the shared password-policy helper on signup and reset; one policy prevents inconsistent checks without blocking existing sign-ins.
 - Collections, reviews and archives are readable only by their owner or an admin (user_roles + has_role); collection pages are client-rendered (ssr: false) so reads carry the session.
+- Keep the search-formulation options, their default and the multi-search merge in the shared `search-formulations` helper, so the option list and the pooling rule stay testable instead of living in the page.
