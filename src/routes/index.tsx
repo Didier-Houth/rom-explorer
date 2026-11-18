@@ -4,6 +4,11 @@ import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { displayRomeCodePair, isRomeCodeFormat, lookupRomeLabel, normalizeRomeCode, OGR_CODES, ogrCodesForRome, ROME_CODES } from "@/lib/rome-codes";
 import { searchRomeVideos, summarizeVideo, type VideoResult } from "@/lib/youtube.functions";
+import {
+  buildSearchQuery,
+  DEFAULT_ETHICAL_CRITERIA_ID,
+  ETHICAL_CRITERIA,
+} from "@/lib/ethical-criteria";
 
 const SEARCH_TEMPLATES = [
   "Métier de [métier] témoignage",
@@ -219,6 +224,8 @@ function Index() {
   // Tous les codes ROME triés (famille A à N) pour la liste complète.
   const romeOptions = useMemo(() => Object.keys(ROME_CODES).sort(), []);
   const [template, setTemplate] = useState<string>(SEARCH_TEMPLATES[0]);
+  // Critères éthiques ajoutés à la recherche YouTube (« Tous critères » par défaut).
+  const [criteria, setCriteria] = useState<string>(DEFAULT_ETHICAL_CRITERIA_ID);
   // Libellé utilisé pour la recherche YouTube : le métier saisi librement est prioritaire
   // sur le libellé généré à partir du code ROME.
   const searchLabel = useMemo(
@@ -231,6 +238,7 @@ function Index() {
     setOgrCode("");
     setMetierLibre("");
     setTemplate(SEARCH_TEMPLATES[0]);
+    setCriteria(DEFAULT_ETHICAL_CRITERIA_ID);
     setResults(null);
     setSelected(null);
     setSummary("");
@@ -264,7 +272,7 @@ function Index() {
         data: {
           romeCode: displayRomeCodePair(romeCode, ogrCode) || "LIBRE",
           romeLabel: searchLabel,
-          query: template.replace("[métier]", searchLabel),
+          query: buildSearchQuery(template, searchLabel, criteria),
         },
       });
       setResults(items);
@@ -592,6 +600,31 @@ function Index() {
                   </option>
                 ))}
               </select>
+            </div>
+            <div className="space-y-1.5 sm:col-span-3">
+              <label
+                htmlFor="ethical-criteria"
+                className="text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+              >
+                Critères éthiques
+              </label>
+              <select
+                id="ethical-criteria"
+                value={criteria}
+                onChange={(e) => setCriteria(e.target.value)}
+                className="h-11 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground outline-none focus:border-ring focus:ring-2 focus:ring-ring/30"
+              >
+                {ETHICAL_CRITERIA.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.label}
+                    {c.id === "all" ? " (par défaut)" : ""}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-muted-foreground">
+                Les mots-clés du critère choisi sont ajoutés à la recherche YouTube. « Tous critères »
+                reprend l'ensemble des critères ; « Aucun critère » recherche sans mot-clé supplémentaire.
+              </p>
             </div>
           </div>
 

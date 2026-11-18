@@ -1,4 +1,5 @@
 # Tasks
+- [x] Add the ethical-criteria choice under the search formulation, with "Tous critères" as the default.
 - [x] Apply and test the new password rules on signup and password reset.
 - [x] Allow password visibility and reuse the email after signup without removing account protection.
 - [x] Add protected identification, persisted contributor identifiers and prefix selection before collection saving.
